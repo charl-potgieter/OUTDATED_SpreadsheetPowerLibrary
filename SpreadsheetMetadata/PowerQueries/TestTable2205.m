@@ -1,0 +1,2 @@
+let    tbl = Table.FromRecords({        [Column_1 = "1", Column_2 = "2", Column_3 = "3", Column_4 = "4", Column_5 = "5"]
+        }),     ChangedType = Table.TransformColumnTypes(       tbl,         {            {"Column_1", type text},            {"Column_2", type text},            {"Column_3", type text},            {"Column_4", type text},            {"Column_5", type text}        })in    ChangedType

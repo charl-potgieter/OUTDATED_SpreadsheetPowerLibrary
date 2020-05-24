@@ -1,0 +1,21 @@
+  - Move DAX query across from SpreadsheetBI (may have to check older versions github) that checks for items in datatables not in lookup tables
+ 
+ - Create a readme
+
+- Don't forget to use DAX studio for debugging, performance measurement and measure creation
+
+ - Read in sample financial data
+    * Do I want to do this in spreadsheetBI?
+    * Maybe move all power query and 
+    * Need to make path relative.
+
+- Create a trial balance measure 
+
+ - Create measure check to ensure that TB = sum of journals
+ 
+  Create a p&l measure based off trial balance dependent on time period selected 
+  ( Create P&L monthly, quarterly annually and PY measures)
+  
+  - Create BS measure
+  
+  - In respect of the missing lookups measure and missing lookup checks --> return OK if data load is set to false, irrespective of whether there is a lookup missing
