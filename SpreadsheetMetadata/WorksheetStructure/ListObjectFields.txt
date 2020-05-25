@@ -1,1 +1,1 @@
-SheetName|ListObjectName|ListObjectHeader|IsFormula|FormulaPqTableGenerator|tbl_PqTableGenerator|NullHeader|False|
+SheetName|ListObjectName|ListObjectHeader|IsFormula|FormulaPqTableGenerator|tbl_PqTableGenerator|Date|False|PqTableGenerator|tbl_PqTableGenerator|Description|False|PqTableGenerator|tbl_PqTableGenerator|SubCategory|False|PqTableGenerator|tbl_PqTableGenerator|Amount|False|

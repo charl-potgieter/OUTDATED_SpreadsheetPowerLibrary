@@ -1,1 +1,1 @@
-SheetName|ListObjectName|ListObjectHeader|NumberFormat|FontColourPqTableGenerator|tbl_PqTableGenerator|NullHeader|General|0
+SheetName|ListObjectName|ListObjectHeader|NumberFormat|FontColourPqTableGenerator|tbl_PqTableGenerator|Date|General|0PqTableGenerator|tbl_PqTableGenerator|Description|General|0PqTableGenerator|tbl_PqTableGenerator|SubCategory|General|0PqTableGenerator|tbl_PqTableGenerator|Amount|General|0
