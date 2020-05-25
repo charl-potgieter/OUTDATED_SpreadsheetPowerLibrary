@@ -1,1 +1,1 @@
-Name|Sheet Category|Sheet Header|Table Name|Number Of Table Columns|Number of Table Rows|Table top left cellPowerLibrary||Spreadsheet Power Library|||
+Name|Sheet Category|Sheet Header|Table Name|Number Of Table Columns|Number of Table Rows|Table top left cellPowerLibrary||Spreadsheet Power Library|||PqTableGenerator|Setup|Power query table generator|tbl_PqTableGenerator|1|2|$B$11
