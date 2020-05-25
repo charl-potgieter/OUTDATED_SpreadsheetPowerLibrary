@@ -1,4 +1,7 @@
   - Move DAX query across from SpreadsheetBI (may have to check older versions github) that checks for items in datatables not in lookup tables
+   --> This is in the DaxMeasureLibraryFolder of spreadsheetBI in text format.
+   --> Maybe create as an actual Meausure rather than just example text
+   --> Write Meausres etc to table with already created Spreadsheet BI functionality--> this can then also be saved as Spreadsheetmetadata
  
  - Create a readme
 
