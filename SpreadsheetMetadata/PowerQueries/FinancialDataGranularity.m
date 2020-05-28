@@ -1,13 +1,14 @@
 let
 
     tbl = Table.FromRecords({
-        [NullHeader = ""]
+        [Granularity = "Journal level granularity"], 
+        [Granularity = "Account level granularity"]
         }), 
 
     ChangedType = Table.TransformColumnTypes(
        tbl, 
         {
-            {"NullHeader", type text}
+            {"Granularity", type text}
 
         })
 

@@ -1,0 +1,126 @@
+Name|Visible|Unique Name|Dax Expression|Name and Expression
+EXAMPLE Check items in data table not in lookup table|True|[Measures].[EXAMPLE Check items in data table not in lookup table]|:=VAR _MissingItems = 
+    EXCEPT(VALUES(Example_DataTable[Foreign Key]), VALUES(Example_LookupTable[Primary Key]))
+    
+VAR _ReturnValue = 
+    IF(
+        ISBLANK(COUNTROWS(_MissingItems)),
+        1,
+        0
+      )
+      
+RETURN
+    _ReturnValue|EXAMPLE Check items in data table not in lookup table:=VAR _MissingItems = 
+    EXCEPT(VALUES(Example_DataTable[Foreign Key]), VALUES(Example_LookupTable[Primary Key]))
+    
+VAR _ReturnValue = 
+    IF(
+        ISBLANK(COUNTROWS(_MissingItems)),
+        1,
+        0
+      )
+      
+RETURN
+    _ReturnValue
+EXAMPLE Check list items in data table not in lookup table|True|[Measures].[EXAMPLE Check list items in data table not in lookup table]|:=VAR _MissingItems = 
+    EXCEPT(VALUES(Example_DataTable[Foreign Key]), VALUES(Example_LookupTable[Primary Key]))
+
+VAR _ReturnValue = 
+    CONCATENATEX(_MissingItems, Example_DataTable[Foreign Key], "|")
+    
+RETURN
+    _ReturnValue|EXAMPLE Check list items in data table not in lookup table:=VAR _MissingItems = 
+    EXCEPT(VALUES(Example_DataTable[Foreign Key]), VALUES(Example_LookupTable[Primary Key]))
+
+VAR _ReturnValue = 
+    CONCATENATEX(_MissingItems, Example_DataTable[Foreign Key], "|")
+    
+RETURN
+    _ReturnValue
+FinancialDataGranularitySelectedForPandL|False|[Measures].[FinancialDataGranularitySelectedForPandL]|:=IF(
+    HASONEVALUE(FinancialDataGranularity[Granularity]),
+    VALUES(FinancialDataGranularity[Granularity]),
+    "Account level granularity")|FinancialDataGranularitySelectedForPandL:=IF(
+    HASONEVALUE(FinancialDataGranularity[Granularity]),
+    VALUES(FinancialDataGranularity[Granularity]),
+    "Account level granularity")
+FinancialDataGranularitySelectedForTb|False|[Measures].[FinancialDataGranularitySelectedForTb]|:=IF(
+    HASONEVALUE(FinancialDataGranularity[Granularity]),
+    VALUES(FinancialDataGranularity[Granularity]),
+    "Account level granularity")|FinancialDataGranularitySelectedForTb:=IF(
+    HASONEVALUE(FinancialDataGranularity[Granularity]),
+    VALUES(FinancialDataGranularity[Granularity]),
+    "Account level granularity")
+NumberScaleAdj|False|[Measures].[NumberScaleAdj]|:=IF(
+    HASONEVALUE(NumberScale[ShowValuesAs]),
+    VALUES(NumberScale[DivideBy]),
+    1)|NumberScaleAdj:=IF(
+    HASONEVALUE(NumberScale[ShowValuesAs]),
+    VALUES(NumberScale[DivideBy]),
+    1)
+P&L|True|[Measures].[P&L]|:=VAR _OkToDisplayPandL = 
+    HASONEVALUE(DateTable[EndOfMonth]) 
+    
+        
+ VAR _PandL_YTD = 
+    CALCULATE(
+         -SUM(Example_TB[Amount]),
+         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
+         )
+    
+ RETURN
+    IF(
+        _OkToDisplayPandL,
+        _PandL_YTD
+        )|P&L:=VAR _OkToDisplayPandL = 
+    HASONEVALUE(DateTable[EndOfMonth]) 
+    
+        
+ VAR _PandL_YTD = 
+    CALCULATE(
+         -SUM(Example_TB[Amount]),
+         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
+         )
+    
+ RETURN
+    IF(
+        _OkToDisplayPandL,
+        _PandL_YTD
+        )
+TB|True|[Measures].[TB]|:=VAR _OkToDisplayTB=
+    HASONEVALUE(DateTable[EndOfMonth]) && 
+    [TimePeriodForTb] = "YTD" && 
+    [FinancialDataGranularitySelectedForTb] = "Account level granularity"
+    
+RETURN
+    IF(
+        _OkToDisplayTB, 
+        SUM(Example_TB[Amount])
+        ) / [NumberScaleAdj]|TB:=VAR _OkToDisplayTB=
+    HASONEVALUE(DateTable[EndOfMonth]) && 
+    [TimePeriodForTb] = "YTD" && 
+    [FinancialDataGranularitySelectedForTb] = "Account level granularity"
+    
+RETURN
+    IF(
+        _OkToDisplayTB, 
+        SUM(Example_TB[Amount])
+        ) / [NumberScaleAdj]
+TimePeriodForPandL|False|[Measures].[TimePeriodForPandL]|:=IF(
+    HASONEVALUE(TimePeriods[Time Period]),
+    VALUES(TimePeriods[Time Period]),
+    "MTD"
+    )|TimePeriodForPandL:=IF(
+    HASONEVALUE(TimePeriods[Time Period]),
+    VALUES(TimePeriods[Time Period]),
+    "MTD"
+    )
+TimePeriodForTb|False|[Measures].[TimePeriodForTb]|:=IF(
+    HASONEVALUE(TimePeriods[Time Period]),
+    VALUES(TimePeriods[Time Period]),
+    "YTD"
+    )|TimePeriodForTb:=IF(
+    HASONEVALUE(TimePeriods[Time Period]),
+    VALUES(TimePeriods[Time Period]),
+    "YTD"
+    )

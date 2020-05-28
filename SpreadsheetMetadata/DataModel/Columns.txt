@@ -1,0 +1,50 @@
+Name|Table Name|Unique Name|Visible
+Date|DateTable|[DateTable].[Date]|True
+DateInt|DateTable|[DateTable].[DateInt]|True
+DayInWeek|DateTable|[DateTable].[DayInWeek]|True
+DayName|DateTable|[DateTable].[DayName]|True
+DayOfMonth|DateTable|[DateTable].[DayOfMonth]|True
+EndOfMonth|DateTable|[DateTable].[EndOfMonth]|True
+EndOfQtr|DateTable|[DateTable].[EndOfQtr]|True
+EndOfWeek|DateTable|[DateTable].[EndOfWeek]|True
+EndOfYear|DateTable|[DateTable].[EndOfYear]|True
+IsEndOfMonth|DateTable|[DateTable].[IsEndOfMonth]|True
+IsEndOfQtr|DateTable|[DateTable].[IsEndOfQtr]|True
+IsEndOfWeek|DateTable|[DateTable].[IsEndOfWeek]|True
+IsEndOfYear|DateTable|[DateTable].[IsEndOfYear]|True
+MonthInCalender|DateTable|[DateTable].[MonthInCalender]|True
+MonthName|DateTable|[DateTable].[MonthName]|True
+MonthOfYear|DateTable|[DateTable].[MonthOfYear]|True
+QuarterInCalendar|DateTable|[DateTable].[QuarterInCalendar]|True
+QuarterOfYear|DateTable|[DateTable].[QuarterOfYear]|True
+Year|DateTable|[DateTable].[Year]|True
+Account Category 1|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Category 1]|True
+Account Category 2|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Category 2]|True
+Account Category 3|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Category 3]|True
+Account Category 4|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Category 4]|True
+Account Category 5|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Category 5]|True
+Account Code and Description|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Code and Description]|True
+Account Code|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Code]|True
+Account Description|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Description]|True
+Amount|Example_DataTable|[Example_DataTable].[Amount]|True
+Date|Example_DataTable|[Example_DataTable].[Date]|True
+Foreign Key|Example_DataTable|[Example_DataTable].[Foreign Key]|True
+SubCategory|Example_DataTable|[Example_DataTable].[SubCategory]|True
+Account Code|Example_Jnls|[Example_Jnls].[Account Code]|True
+EndOfMonth|Example_Jnls|[Example_Jnls].[EndOfMonth]|True
+Jnl Amount|Example_Jnls|[Example_Jnls].[Jnl Amount]|True
+Jnl Description|Example_Jnls|[Example_Jnls].[Jnl Description]|True
+Jnl ID|Example_Jnls|[Example_Jnls].[Jnl ID]|True
+Full Description|Example_LookupTable|[Example_LookupTable].[Full Description]|True
+Primary Key|Example_LookupTable|[Example_LookupTable].[Primary Key]|True
+Account Code|Example_TB|[Example_TB].[Account Code]|True
+Amount|Example_TB|[Example_TB].[Amount]|True
+EndOfMonth|Example_TB|[Example_TB].[EndOfMonth]|True
+Granularity|FinancialDataGranularity|[FinancialDataGranularity].[Granularity]|True
+NullHeader|Measures_ErrorChecks|[Measures_ErrorChecks].[NullHeader]|True
+NullHeader|Measures_PandL|[Measures_PandL].[NullHeader]|True
+NullHeader|Measures_TrialBalance|[Measures_TrialBalance].[NullHeader]|True
+DivideBy|NumberScale|[NumberScale].[DivideBy]|True
+ShowValuesAs|NumberScale|[NumberScale].[ShowValuesAs]|True
+Time Period Sort By Col|TimePeriods|[TimePeriods].[Time Period Sort By Col]|True
+Time Period|TimePeriods|[TimePeriods].[Time Period]|True

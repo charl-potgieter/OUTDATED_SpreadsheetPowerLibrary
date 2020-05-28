@@ -1,24 +1,16 @@
-  - Move DAX query across from SpreadsheetBI (may have to check older versions github) that checks for items in datatables not in lookup tables
-   --> This is in the DaxMeasureLibraryFolder of spreadsheetBI in text format.
-   --> Maybe create as an actual Meausure rather than just example text
-   --> Write Meausres etc to table with already created Spreadsheet BI functionality--> this can then also be saved as Spreadsheetmetadata
- 
- - Create a readme
-
-- Don't forget to use DAX studio for debugging, performance measurement and measure creation
-
- - Read in sample financial data
-    * Do I want to do this in spreadsheetBI?
-    * Maybe move all power query and 
-    * Need to make path relative.
-
-- Create a trial balance measure 
-
- - Create measure check to ensure that TB = sum of journals
- 
-  Create a p&l measure based off trial balance dependent on time period selected 
+   Create a p&l measure based off trial balance dependent on time period selected 
   ( Create P&L monthly, quarterly annually and PY measures)
-  
+
+ - Display P&L at different granularities
+    - For example only allow cost of sales to drill to account level 2, expenses to account level 3
+
+  - Ensure I can get a P&L that can do MTD, QTD, YTD all in one pivot table
+
   - Create BS measure
   
   - In respect of the missing lookups measure and missing lookup checks --> return OK if data load is set to false, irrespective of whether there is a lookup missing
+
+
+  - Create a readme
+
+- Don't forget to use DAX studio for debugging, performance measurement and measure creation

@@ -1,0 +1,125 @@
+/********************************************************************** 
+       Dax measures
+***********************************************************************/
+
+
+
+//--------------------------------------------------------------------
+//     EXAMPLE Check items in data table not in lookup table
+//-------------------------------------------------------------------- 
+
+EXAMPLE Check items in data table not in lookup table:=VAR _MissingItems = 
+    EXCEPT(VALUES(Example_DataTable[Foreign Key]), VALUES(Example_LookupTable[Primary Key]))
+    
+VAR _ReturnValue = 
+    IF(
+        ISBLANK(COUNTROWS(_MissingItems)),
+        1,
+        0
+      )
+      
+RETURN
+    _ReturnValue
+
+
+//--------------------------------------------------------------------
+//     EXAMPLE Check list items in data table not in lookup table
+//-------------------------------------------------------------------- 
+
+EXAMPLE Check list items in data table not in lookup table:=VAR _MissingItems = 
+    EXCEPT(VALUES(Example_DataTable[Foreign Key]), VALUES(Example_LookupTable[Primary Key]))
+
+VAR _ReturnValue = 
+    CONCATENATEX(_MissingItems, Example_DataTable[Foreign Key], "|")
+    
+RETURN
+    _ReturnValue
+
+
+//--------------------------------------------------------------------
+//     FinancialDataGranularitySelectedForPandL
+//-------------------------------------------------------------------- 
+
+FinancialDataGranularitySelectedForPandL:=IF(
+    HASONEVALUE(FinancialDataGranularity[Granularity]),
+    VALUES(FinancialDataGranularity[Granularity]),
+    "Account level granularity")
+
+
+//--------------------------------------------------------------------
+//     FinancialDataGranularitySelectedForTb
+//-------------------------------------------------------------------- 
+
+FinancialDataGranularitySelectedForTb:=IF(
+    HASONEVALUE(FinancialDataGranularity[Granularity]),
+    VALUES(FinancialDataGranularity[Granularity]),
+    "Account level granularity")
+
+
+//--------------------------------------------------------------------
+//     NumberScaleAdj
+//-------------------------------------------------------------------- 
+
+NumberScaleAdj:=IF(
+    HASONEVALUE(NumberScale[ShowValuesAs]),
+    VALUES(NumberScale[DivideBy]),
+    1)
+
+
+//--------------------------------------------------------------------
+//     P&L
+//-------------------------------------------------------------------- 
+
+P&L:=VAR _OkToDisplayPandL = 
+    HASONEVALUE(DateTable[EndOfMonth]) 
+    
+        
+ VAR _PandL_YTD = 
+    CALCULATE(
+         -SUM(Example_TB[Amount]),
+         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
+         )
+    
+ RETURN
+    IF(
+        _OkToDisplayPandL,
+        _PandL_YTD
+        )
+
+
+//--------------------------------------------------------------------
+//     TB
+//-------------------------------------------------------------------- 
+
+TB:=VAR _OkToDisplayTB=
+    HASONEVALUE(DateTable[EndOfMonth]) && 
+    [TimePeriodForTb] = "YTD" && 
+    [FinancialDataGranularitySelectedForTb] = "Account level granularity"
+    
+RETURN
+    IF(
+        _OkToDisplayTB, 
+        SUM(Example_TB[Amount])
+        ) / [NumberScaleAdj]
+
+
+//--------------------------------------------------------------------
+//     TimePeriodForPandL
+//-------------------------------------------------------------------- 
+
+TimePeriodForPandL:=IF(
+    HASONEVALUE(TimePeriods[Time Period]),
+    VALUES(TimePeriods[Time Period]),
+    "MTD"
+    )
+
+
+//--------------------------------------------------------------------
+//     TimePeriodForTb
+//-------------------------------------------------------------------- 
+
+TimePeriodForTb:=IF(
+    HASONEVALUE(TimePeriods[Time Period]),
+    VALUES(TimePeriods[Time Period]),
+    "YTD"
+    )

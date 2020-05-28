@@ -1,0 +1,6 @@
+Primary Key Table|Primary Key Column|Foreign Key Table|Foreign Key Column|Active
+Example_LookupTable|Primary Key|Example_DataTable|Foreign Key|True
+DateTable|Date|Example_TB|EndOfMonth|True
+Example_ChartOfAccounts|Account Code|Example_TB|Account Code|True
+DateTable|Date|Example_Jnls|EndOfMonth|True
+Example_ChartOfAccounts|Account Code|Example_Jnls|Account Code|True
