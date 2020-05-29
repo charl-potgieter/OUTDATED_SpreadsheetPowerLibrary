@@ -1,5 +1,16 @@
+Is it worthwhile seperating out the AccountLevel vs JournalLevel portion of the P&L into 2 seperate measures given that the logic is very different?   They do share the same test say _OkToDisplayPandLYTD, although this can also be moved into a new reusable measure.
+
+Use measure RestrictHierachyLevels to modify P&L display
+
+Allow different filtering for Jnl level P&L vs Account level P&L
+
    Create a p&l measure based off trial balance dependent on time period selected 
   ( Create P&L monthly, quarterly annually and PY measures)
+
+ - Only display for example YTD P&L if month is the last month with data in year, for example dont display Aug YTD if Sep YTD exists
+    allow above behaviour to be turned on with flag
+    also have flags for only display YTD for full year
+
 
  - Display P&L at different granularities
     - For example only allow cost of sales to drill to account level 2, expenses to account level 3
@@ -14,3 +25,5 @@
   - Create a readme
 
 - Don't forget to use DAX studio for debugging, performance measurement and measure creation
+   Dax studio F6 for format or Ctrl F6 for short form formatting
+   https://www.youtube.com/watch?v=gTN5ai8j3PE

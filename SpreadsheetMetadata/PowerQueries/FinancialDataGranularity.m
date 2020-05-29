@@ -1,8 +1,8 @@
 let
 
     tbl = Table.FromRecords({
-        [Granularity = "Journal level granularity"], 
-        [Granularity = "Account level granularity"]
+        [Granularity = "Journal level"], 
+        [Granularity = "Account level"]
         }), 
 
     ChangedType = Table.TransformColumnTypes(

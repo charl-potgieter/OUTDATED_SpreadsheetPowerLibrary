@@ -42,9 +42,11 @@ Amount|Example_TB|[Example_TB].[Amount]|True
 EndOfMonth|Example_TB|[Example_TB].[EndOfMonth]|True
 Granularity|FinancialDataGranularity|[FinancialDataGranularity].[Granularity]|True
 NullHeader|Measures_ErrorChecks|[Measures_ErrorChecks].[NullHeader]|True
+NullHeader|Measures_Journals|[Measures_Journals].[NullHeader]|True
 NullHeader|Measures_PandL|[Measures_PandL].[NullHeader]|True
 NullHeader|Measures_TrialBalance|[Measures_TrialBalance].[NullHeader]|True
 DivideBy|NumberScale|[NumberScale].[DivideBy]|True
 ShowValuesAs|NumberScale|[NumberScale].[ShowValuesAs]|True
+DisplayBehaviour|PandL_DisplayBehaviour|[PandL_DisplayBehaviour].[DisplayBehaviour]|True
 Time Period Sort By Col|TimePeriods|[TimePeriods].[Time Period Sort By Col]|True
 Time Period|TimePeriods|[TimePeriods].[Time Period]|True
