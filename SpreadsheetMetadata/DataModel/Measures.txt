@@ -103,7 +103,14 @@ FinancialDataGranularitySelectedForTb|False|[Measures].[FinancialDataGranularity
     HASONEVALUE(FinancialDataGranularity[Granularity]),
     VALUES(FinancialDataGranularity[Granularity]),
     "Account level granularity")
-Journals|True|[Measures].[Journals]|:=SUM(Example_Jnls[Jnl Amount])|Journals:=SUM(Example_Jnls[Jnl Amount])
+Journals|True|[Measures].[Journals]|:=SUM(Example_Jnls[Jnl Amount]) / [NumberScaleAdj]|Journals:=SUM(Example_Jnls[Jnl Amount]) / [NumberScaleAdj]
+MaxAllSelectedDates|False|[Measures].[MaxAllSelectedDates]|:=CALCULATE(
+        MAX(DateTable[Date]),
+        ALLSELECTED(DateTable)
+    )|MaxAllSelectedDates:=CALCULATE(
+        MAX(DateTable[Date]),
+        ALLSELECTED(DateTable)
+    )
 NumberScaleAdj|False|[Measures].[NumberScaleAdj]|:=IF(
     HASONEVALUE(NumberScale[ShowValuesAs]),
     VALUES(NumberScale[DivideBy]),
@@ -111,7 +118,88 @@ NumberScaleAdj|False|[Measures].[NumberScaleAdj]|:=IF(
     HASONEVALUE(NumberScale[ShowValuesAs]),
     VALUES(NumberScale[DivideBy]),
     1)
-P&L|True|[Measures].[P&L]|:=VAR _OkToDisplayPandL = 
+OkToDisplayPandL|False|[Measures].[OkToDisplayPandL]|:=NOT(ISEMPTY(VALUES(Example_TB[EndOfMonth])))|OkToDisplayPandL:=NOT(ISEMPTY(VALUES(Example_TB[EndOfMonth])))
+OkToDisplayPandL_MTD|False|[Measures].[OkToDisplayPandL_MTD]|:=[OkToDisplayPandL] && 
+    HASONEVALUE(DateTable[EndOfMonth])|OkToDisplayPandL_MTD:=[OkToDisplayPandL] && 
+    HASONEVALUE(DateTable[EndOfMonth])
+OkToDisplayPandL_PY|False|[Measures].[OkToDisplayPandL_PY]|:=[OkToDisplayPandL_YTD]|OkToDisplayPandL_PY:=[OkToDisplayPandL_YTD]
+OkToDisplayPandL_QTD|False|[Measures].[OkToDisplayPandL_QTD]|:=[OkToDisplayPandL] &&
+   HASONEVALUE(DateTable[QuarterInCalendar])|OkToDisplayPandL_QTD:=[OkToDisplayPandL] &&
+   HASONEVALUE(DateTable[QuarterInCalendar])
+OkToDisplayPandL_YTD|False|[Measures].[OkToDisplayPandL_YTD]|:=[OkToDisplayPandL] &&
+   HASONEVALUE(DateTable[Year]) && 
+   (
+       //Date is the last day of the year
+       (MAX(DateTable[MonthOfYear]) = 12 && MAX(DateTable[DayOfMonth]) = 31) ||
+           //Date is the max date selected and Display YTD at non year end flag is TRUE
+           (Max(DateTable[Date]) = [MaxAllSelectedDates] && [DisplayYTD_AtNonYearEnd])
+    ) || 
+    (
+        HASONEVALUE(DateTable[EndOfMonth]) && NOT([DisplayYTD_AtMaxMonthOnly])
+    )|OkToDisplayPandL_YTD:=[OkToDisplayPandL] &&
+   HASONEVALUE(DateTable[Year]) && 
+   (
+       //Date is the last day of the year
+       (MAX(DateTable[MonthOfYear]) = 12 && MAX(DateTable[DayOfMonth]) = 31) ||
+           //Date is the max date selected and Display YTD at non year end flag is TRUE
+           (Max(DateTable[Date]) = [MaxAllSelectedDates] && [DisplayYTD_AtNonYearEnd])
+    ) || 
+    (
+        HASONEVALUE(DateTable[EndOfMonth]) && NOT([DisplayYTD_AtMaxMonthOnly])
+    )
+P&L Account Level|False|[Measures].[P&L Account Level]|:=BLANK()|P&L Account Level:=BLANK()
+P&L Journal Level|False|[Measures].[P&L Journal Level]|:=VAR _PandL_YTD = 
+    CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESYTD(DateTable[Date]))
+
+VAR _PandL_QTD =     CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESQTD(DateTable[Date]))
+
+VAR _PandL_MTD =     CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESMTD(DateTable[Date]))
+
+VAR _PandL_PY = BLANK()
+        
+RETURN
+    SWITCH(
+        TRUE(),
+        [TimePeriodForPandL] = "YTD" && [OkToDisplayPandL_YTD],  _PandL_YTD,
+        [TimePeriodForPandL] = "QTD" && [OkToDisplayPandL_QTD], _PandL_QTD,
+        [TimePeriodForPandL] = "MTD" && [OkToDisplayPandL_MTD], _PandL_MTD,
+        [TimePeriodForPandL] = "PY" && [OkToDisplayPandL_PY], _PandL_PY
+        )|P&L Journal Level:=VAR _PandL_YTD = 
+    CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESYTD(DateTable[Date]))
+
+VAR _PandL_QTD =     CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESQTD(DateTable[Date]))
+
+VAR _PandL_MTD =     CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESMTD(DateTable[Date]))
+
+VAR _PandL_PY = BLANK()
+        
+RETURN
+    SWITCH(
+        TRUE(),
+        [TimePeriodForPandL] = "YTD" && [OkToDisplayPandL_YTD],  _PandL_YTD,
+        [TimePeriodForPandL] = "QTD" && [OkToDisplayPandL_QTD], _PandL_QTD,
+        [TimePeriodForPandL] = "MTD" && [OkToDisplayPandL_MTD], _PandL_MTD,
+        [TimePeriodForPandL] = "PY" && [OkToDisplayPandL_PY], _PandL_PY
+        )
+P&L OUTDATED|True|[Measures].[P&L OUTDATED]|:=VAR _OkToDisplayPandL = 
     NOT(ISEMPTY(VALUES(Example_TB[EndOfMonth])))
 
 // NEED TO REFINE THIS
@@ -223,7 +311,7 @@ VAR _PandL_MTD=
          ) / [NumberScaleAdj]
     
  RETURN
-    _ReturnValue|P&L:=VAR _OkToDisplayPandL = 
+    _ReturnValue|P&L OUTDATED:=VAR _OkToDisplayPandL = 
     NOT(ISEMPTY(VALUES(Example_TB[EndOfMonth])))
 
 // NEED TO REFINE THIS
@@ -336,6 +424,15 @@ VAR _PandL_MTD=
     
  RETURN
     _ReturnValue
+P&L|True|[Measures].[P&L]|:=SWITCH (
+    [FinancialDataGranularitySelectedForPandL],
+    "Account level", [P&L Account Level],
+    "Journal level", [P&L Journal Level]
+)|P&L:=SWITCH (
+    [FinancialDataGranularitySelectedForPandL],
+    "Account level", [P&L Account Level],
+    "Journal level", [P&L Journal Level]
+)
 RestrictHierarchyLevels|False|[Measures].[RestrictHierarchyLevels]|:=COUNTROWS (
 //Normally P&L display is restricted to certail levels depending on account.  If this measure is FALSE the restriction is removed
     CALCULATETABLE (

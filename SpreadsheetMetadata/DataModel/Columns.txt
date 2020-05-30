@@ -26,6 +26,11 @@ Account Category 5|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Ca
 Account Code and Description|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Code and Description]|True
 Account Code|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Code]|True
 Account Description|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Description]|True
+Sort Order Account Category 1|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Sort Order Account Category 1]|True
+Sort Order Account Category 2|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Sort Order Account Category 2]|True
+Sort Order Account Category 3|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Sort Order Account Category 3]|True
+Sort Order Account Category 4|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Sort Order Account Category 4]|True
+Sort Order Account Category 5|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Sort Order Account Category 5]|True
 Amount|Example_DataTable|[Example_DataTable].[Amount]|True
 Date|Example_DataTable|[Example_DataTable].[Date]|True
 Foreign Key|Example_DataTable|[Example_DataTable].[Foreign Key]|True
@@ -44,6 +49,7 @@ Granularity|FinancialDataGranularity|[FinancialDataGranularity].[Granularity]|Tr
 NullHeader|Measures_ErrorChecks|[Measures_ErrorChecks].[NullHeader]|True
 NullHeader|Measures_Journals|[Measures_Journals].[NullHeader]|True
 NullHeader|Measures_PandL|[Measures_PandL].[NullHeader]|True
+NullHeader|Measures_Sundry|[Measures_Sundry].[NullHeader]|True
 NullHeader|Measures_TrialBalance|[Measures_TrialBalance].[NullHeader]|True
 DivideBy|NumberScale|[NumberScale].[DivideBy]|True
 ShowValuesAs|NumberScale|[NumberScale].[ShowValuesAs]|True

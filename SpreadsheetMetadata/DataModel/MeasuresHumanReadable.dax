@@ -112,7 +112,17 @@ FinancialDataGranularitySelectedForTb:=IF(
 //     Journals
 //-------------------------------------------------------------------- 
 
-Journals:=SUM(Example_Jnls[Jnl Amount])
+Journals:=SUM(Example_Jnls[Jnl Amount]) / [NumberScaleAdj]
+
+
+//--------------------------------------------------------------------
+//     MaxAllSelectedDates
+//-------------------------------------------------------------------- 
+
+MaxAllSelectedDates:=CALCULATE(
+        MAX(DateTable[Date]),
+        ALLSELECTED(DateTable)
+    )
 
 
 //--------------------------------------------------------------------
@@ -126,10 +136,96 @@ NumberScaleAdj:=IF(
 
 
 //--------------------------------------------------------------------
-//     P&L
+//     OkToDisplayPandL
 //-------------------------------------------------------------------- 
 
-P&L:=VAR _OkToDisplayPandL = 
+OkToDisplayPandL:=NOT(ISEMPTY(VALUES(Example_TB[EndOfMonth])))
+
+
+//--------------------------------------------------------------------
+//     OkToDisplayPandL_MTD
+//-------------------------------------------------------------------- 
+
+OkToDisplayPandL_MTD:=[OkToDisplayPandL] && 
+    HASONEVALUE(DateTable[EndOfMonth])
+
+
+//--------------------------------------------------------------------
+//     OkToDisplayPandL_PY
+//-------------------------------------------------------------------- 
+
+OkToDisplayPandL_PY:=[OkToDisplayPandL_YTD]
+
+
+//--------------------------------------------------------------------
+//     OkToDisplayPandL_QTD
+//-------------------------------------------------------------------- 
+
+OkToDisplayPandL_QTD:=[OkToDisplayPandL] &&
+   HASONEVALUE(DateTable[QuarterInCalendar])
+
+
+//--------------------------------------------------------------------
+//     OkToDisplayPandL_YTD
+//-------------------------------------------------------------------- 
+
+OkToDisplayPandL_YTD:=[OkToDisplayPandL] &&
+   HASONEVALUE(DateTable[Year]) && 
+   (
+       //Date is the last day of the year
+       (MAX(DateTable[MonthOfYear]) = 12 && MAX(DateTable[DayOfMonth]) = 31) ||
+           //Date is the max date selected and Display YTD at non year end flag is TRUE
+           (Max(DateTable[Date]) = [MaxAllSelectedDates] && [DisplayYTD_AtNonYearEnd])
+    ) || 
+    (
+        HASONEVALUE(DateTable[EndOfMonth]) && NOT([DisplayYTD_AtMaxMonthOnly])
+    )
+
+
+//--------------------------------------------------------------------
+//     P&L Account Level
+//-------------------------------------------------------------------- 
+
+P&L Account Level:=BLANK()
+
+
+//--------------------------------------------------------------------
+//     P&L Journal Level
+//-------------------------------------------------------------------- 
+
+P&L Journal Level:=VAR _PandL_YTD = 
+    CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESYTD(DateTable[Date]))
+
+VAR _PandL_QTD =     CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESQTD(DateTable[Date]))
+
+VAR _PandL_MTD =     CALCULATE(
+        -[Journals],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        DATESMTD(DateTable[Date]))
+
+VAR _PandL_PY = BLANK()
+        
+RETURN
+    SWITCH(
+        TRUE(),
+        [TimePeriodForPandL] = "YTD" && [OkToDisplayPandL_YTD],  _PandL_YTD,
+        [TimePeriodForPandL] = "QTD" && [OkToDisplayPandL_QTD], _PandL_QTD,
+        [TimePeriodForPandL] = "MTD" && [OkToDisplayPandL_MTD], _PandL_MTD,
+        [TimePeriodForPandL] = "PY" && [OkToDisplayPandL_PY], _PandL_PY
+        )
+
+
+//--------------------------------------------------------------------
+//     P&L OUTDATED
+//-------------------------------------------------------------------- 
+
+P&L OUTDATED:=VAR _OkToDisplayPandL = 
     NOT(ISEMPTY(VALUES(Example_TB[EndOfMonth])))
 
 // NEED TO REFINE THIS
@@ -242,6 +338,17 @@ VAR _PandL_MTD=
     
  RETURN
     _ReturnValue
+
+
+//--------------------------------------------------------------------
+//     P&L
+//-------------------------------------------------------------------- 
+
+P&L:=SWITCH (
+    [FinancialDataGranularitySelectedForPandL],
+    "Account level", [P&L Account Level],
+    "Journal level", [P&L Journal Level]
+)
 
 
 //--------------------------------------------------------------------

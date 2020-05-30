@@ -1,4 +1,13 @@
-Is it worthwhile seperating out the AccountLevel vs JournalLevel portion of the P&L into 2 seperate measures given that the logic is very different?   They do share the same test say _OkToDisplayPandLYTD, although this can also be moved into a new reusable measure.
+OkToDisplayPandL measure --> Only allow display when either whole month is selected or last day of the month is selected
+
+Conditional formatting for YTD and MTD in pivot table?
+
+
+For YTD and QTD P&L it is possible that entire year has been selected.  When the TB is picked up to calculate the P&L pick up the tb at the max value.
+
+Reference a Tb and jnl measure in the p and l measure rather than tables directly in the event Tb and jnl measures could be more complicated with multiple hierarchies etc
+
+Continue to build out OkToDisplayP&L, OkToDisplayP&LYTD, OkToDisplayP&LQTD, OkToDisplayP&LMTD
 
 Use measure RestrictHierachyLevels to modify P&L display
 
