@@ -1,13 +1,9 @@
-OkToDisplayPandL measure --> Only allow display when either whole month is selected or last day of the month is selected
+Work on Account level P&L granularity
+ - YTD is done
+ -  QTD create an end of previous_qtr VAR maybe using MAX (previousquarter(DateTable[Date]))
 
-Conditional formatting for YTD and MTD in pivot table?
+Conditional formatting for YTD and MTD in pivot table? --> Yes this is possible
 
-
-For YTD and QTD P&L it is possible that entire year has been selected.  When the TB is picked up to calculate the P&L pick up the tb at the max value.
-
-Reference a Tb and jnl measure in the p and l measure rather than tables directly in the event Tb and jnl measures could be more complicated with multiple hierarchies etc
-
-Continue to build out OkToDisplayP&L, OkToDisplayP&LYTD, OkToDisplayP&LQTD, OkToDisplayP&LMTD
 
 Use measure RestrictHierachyLevels to modify P&L display
 
