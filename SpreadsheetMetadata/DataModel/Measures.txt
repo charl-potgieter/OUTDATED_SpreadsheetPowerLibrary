@@ -89,13 +89,17 @@ VAR _ReturnValue =
     
 RETURN
     _ReturnValue
-FinancialDataGranularitySelectedForPandL|False|[Measures].[FinancialDataGranularitySelectedForPandL]|:=IF(
-    HASONEVALUE(FinancialDataGranularity[Granularity]),
-    VALUES(FinancialDataGranularity[Granularity]),
-    "Account level")|FinancialDataGranularitySelectedForPandL:=IF(
-    HASONEVALUE(FinancialDataGranularity[Granularity]),
-    VALUES(FinancialDataGranularity[Granularity]),
-    "Account level")
+FinancialDataGranularitySelectedForPandL|False|[Measures].[FinancialDataGranularitySelectedForPandL]|:=SWITCH(
+ //  Cant just rely on HASONEVALUE, otherwise Account value is auto selected when mixed combo exists
+     TRUE(),
+     HASONEVALUE(FinancialDataGranularity[Granularity]), VALUES(FinancialDataGranularity[Granularity]),
+     NOT(ISFILTERED(FinancialDataGranularity[Granularity])), "Account level", 
+     BLANK())|FinancialDataGranularitySelectedForPandL:=SWITCH(
+ //  Cant just rely on HASONEVALUE, otherwise Account value is auto selected when mixed combo exists
+     TRUE(),
+     HASONEVALUE(FinancialDataGranularity[Granularity]), VALUES(FinancialDataGranularity[Granularity]),
+     NOT(ISFILTERED(FinancialDataGranularity[Granularity])), "Account level", 
+     BLANK())
 FinancialDataGranularitySelectedForTb|False|[Measures].[FinancialDataGranularitySelectedForTb]|:=IF(
     HASONEVALUE(FinancialDataGranularity[Granularity]),
     VALUES(FinancialDataGranularity[Granularity]),
@@ -237,14 +241,43 @@ P&L Account Level|False|[Measures].[P&L Account Level]|:=VAR _LastDateSelected =
 VAR _PandL_YTD =  CALCULATE(
         -[TB],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
-        DateTable[Date] = _LastDateSelected
-    )
+        TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected
+        DateTable[Date] = _LastDateSelected)
 
-VAR _PandL_QTD =  BLANK()
+VAR _LastDatePriorQuarter = LASTDATE(PREVIOUSQUARTER(DateTable[Date]))
 
-VAR _PandL_MTD = BLANK()
+VAR _PandL_YTD_PriorQtrEnd =   CALCULATE(
+        -[TB],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
+        DateTable[Date] = _LastDatePriorQuarter)
 
-VAR _PandL_PY = BLANK()
+VAR _PandL_QTD =IF(
+   MONTH(_LastDateSelected) <=3, 
+   _PandL_YTD,
+   _PandL_YTD - _PandL_YTD_PriorQtrEnd)
+
+
+VAR _LastDatePriorMonth = LASTDATE(PREVIOUSMONTH(DateTable[Date]))
+
+VAR _PandL_YTD_PriorMonthEnd = CALCULATE(
+    -[TB],
+    KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+    TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
+    DateTable[Date] = _LastDatePriorMonth)    
+
+VAR _PandL_MTD  = IF(
+    MONTH(_LastDateSelected) = 1, 
+    _PandL_YTD,
+    _PandL_YTD - _PandL_YTD_PriorMonthEnd)
+
+VAR _LastDatePY = LASTDATE(PREVIOUSYEAR(DateTable[Date]))
+
+VAR _PandL_PY =  CALCULATE(
+    -[TB],
+    KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+    TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
+    DateTable[Date] = _LastDatePY) 
         
 RETURN
     SWITCH(
@@ -259,14 +292,43 @@ RETURN
 VAR _PandL_YTD =  CALCULATE(
         -[TB],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
-        DateTable[Date] = _LastDateSelected
-    )
+        TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected
+        DateTable[Date] = _LastDateSelected)
 
-VAR _PandL_QTD =  BLANK()
+VAR _LastDatePriorQuarter = LASTDATE(PREVIOUSQUARTER(DateTable[Date]))
 
-VAR _PandL_MTD = BLANK()
+VAR _PandL_YTD_PriorQtrEnd =   CALCULATE(
+        -[TB],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+        TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
+        DateTable[Date] = _LastDatePriorQuarter)
 
-VAR _PandL_PY = BLANK()
+VAR _PandL_QTD =IF(
+   MONTH(_LastDateSelected) <=3, 
+   _PandL_YTD,
+   _PandL_YTD - _PandL_YTD_PriorQtrEnd)
+
+
+VAR _LastDatePriorMonth = LASTDATE(PREVIOUSMONTH(DateTable[Date]))
+
+VAR _PandL_YTD_PriorMonthEnd = CALCULATE(
+    -[TB],
+    KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+    TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
+    DateTable[Date] = _LastDatePriorMonth)    
+
+VAR _PandL_MTD  = IF(
+    MONTH(_LastDateSelected) = 1, 
+    _PandL_YTD,
+    _PandL_YTD - _PandL_YTD_PriorMonthEnd)
+
+VAR _LastDatePY = LASTDATE(PREVIOUSYEAR(DateTable[Date]))
+
+VAR _PandL_PY =  CALCULATE(
+    -[TB],
+    KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
+    TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
+    DateTable[Date] = _LastDatePY) 
         
 RETURN
     SWITCH(
@@ -372,14 +434,18 @@ RETURN
         _OkToDisplayTB, 
         SUM(Example_TB[Amount])
         ) / [NumberScaleAdj]
-TimePeriodForPandL|False|[Measures].[TimePeriodForPandL]|:=IF(
-    HASONEVALUE(TimePeriods[Time Period]),
-    VALUES(TimePeriods[Time Period]),
-    "MTD"
-    )|TimePeriodForPandL:=IF(
-    HASONEVALUE(TimePeriods[Time Period]),
-    VALUES(TimePeriods[Time Period]),
-    "MTD"
+TimePeriodForPandL|False|[Measures].[TimePeriodForPandL]|:=SWITCH(
+      //  Cant just rely on HASONEVALUE, otherwise for example MTD numbers are geneterated when both YTD and QTD are selected
+    TRUE(),
+    HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
+    NOT(ISFILTERED(TimePeriods[Time Period])), "MTD",
+    BLANK()
+    )|TimePeriodForPandL:=SWITCH(
+      //  Cant just rely on HASONEVALUE, otherwise for example MTD numbers are geneterated when both YTD and QTD are selected
+    TRUE(),
+    HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
+    NOT(ISFILTERED(TimePeriods[Time Period])), "MTD",
+    BLANK()
     )
 TimePeriodForTb|False|[Measures].[TimePeriodForTb]|:=IF(
     HASONEVALUE(TimePeriods[Time Period]),

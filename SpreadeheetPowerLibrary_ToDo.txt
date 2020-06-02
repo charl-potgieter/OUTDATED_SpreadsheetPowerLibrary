@@ -1,9 +1,7 @@
-Work on Account level P&L granularity
- - YTD is done
- -  QTD create an end of previous_qtr VAR maybe using MAX (previousquarter(DateTable[Date]))
+Temporarily go back to Spreadsheet BI and look at how measures are saved.  There is an issue with the pipe delimted output and line feeds.
+Also worthwhile getting the table name into the HumanReadable dax measures
 
 Conditional formatting for YTD and MTD in pivot table? --> Yes this is possible
-
 
 Use measure RestrictHierachyLevels to modify P&L display
 
@@ -12,17 +10,10 @@ Allow different filtering for Jnl level P&L vs Account level P&L
    Create a p&l measure based off trial balance dependent on time period selected 
   ( Create P&L monthly, quarterly annually and PY measures)
 
- - Only display for example YTD P&L if month is the last month with data in year, for example dont display Aug YTD if Sep YTD exists
-    allow above behaviour to be turned on with flag
-    also have flags for only display YTD for full year
-
-
  - Display P&L at different granularities
     - For example only allow cost of sales to drill to account level 2, expenses to account level 3
 
-  - Ensure I can get a P&L that can do MTD, QTD, YTD all in one pivot table
-
-  - Create BS measure
+   - Create BS measure
   
   - In respect of the missing lookups measure and missing lookup checks --> return OK if data load is set to false, irrespective of whether there is a lookup missing
 
