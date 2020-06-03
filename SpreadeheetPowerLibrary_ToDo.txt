@@ -1,5 +1,24 @@
+Create Generic (hidden measures) based off the P&L versions of:
+ - OKToDisplayYTD
+ - OKToDisplayQTD
+ - OKToDisplayMTD
+ - OkToDisplayPY
+ - OkToDisplayAll
+ - OkToDisplayPointInTime
+
+Next work on OkToDisplayData (in Measures_DataCalculations) which references the above and adds items depending on DataTypeSelected
+
+Can I generalise the p&l measures to be broader than just p&l.  In essence these are simply difference between dates and point in time measures.  They could also be used for  tbs of different sorts etc.   There are really 3 calculation methods
+- point in time
+- movement between points in time
+- sum of transactions
+
+Get rid of FinancialDataGranularity and MeasuresPandL if the generalisation works
+
+
 Temporarily go back to Spreadsheet BI and look at how measures are saved.  There is an issue with the pipe delimted output and line feeds.
 Also worthwhile getting the table name into the HumanReadable dax measures
+
 
 Conditional formatting for YTD and MTD in pivot table? --> Yes this is possible
 

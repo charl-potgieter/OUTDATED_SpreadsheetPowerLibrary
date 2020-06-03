@@ -5,14 +5,66 @@
 
 
 //--------------------------------------------------------------------
+//     AllSelectedDatesInCurrentQtr
+//-------------------------------------------------------------------- 
+
+AllSelectedDatesInCurrentQtr:=VAR _Qtr = 
+   VALUES(DateTable[QuarterInCalendar])
+
+RETURN
+IF(
+    HASONEVALUE(DateTable[QuarterInCalendar]), 
+    CALCULATE(
+            MAX(DateTable[Date]),
+            ALLSELECTED(DateTable),
+            DateTable[QuarterInCalendar] = _Qtr
+    )
+)
+
+
+//--------------------------------------------------------------------
+//     DataMeasureSelected
+//-------------------------------------------------------------------- 
+
+DataMeasureSelected:=SWITCH(
+    [DataTypeSelected], 
+    "Journals", [Journals],
+    "TB", [TB],
+    "P&L (from tb)", [PandL_FromTB]
+)
+
+
+//--------------------------------------------------------------------
+//     DataTypeSelected
+//-------------------------------------------------------------------- 
+
+DataTypeSelected:=SWITCH(
+    TRUE(),
+    HASONEVALUE(DataTypes[Data Type]), VALUES(DataTypes[Data Type]),
+    NOT(ISFILTERED(DataTypes[Data Type])), [DefaultDataType],
+    BLANK()
+)
+
+
+//--------------------------------------------------------------------
+//     DefaultDataType
+//-------------------------------------------------------------------- 
+
+DefaultDataType:=CALCULATE(
+    FIRSTNONBLANK(DataTypes[Data Type], TRUE()),
+    DataTypes[Default] = TRUE()
+)
+
+
+//--------------------------------------------------------------------
 //     DisplayQTD_AtMaxMonthOnly
 //-------------------------------------------------------------------- 
 
 DisplayQTD_AtMaxMonthOnly:=COUNTROWS (
 //When this measure is false the QTD P&L is displayed for each month of qtr despite the fact that it is not the last month displayed in the qtr
     CALCULATETABLE (
-        PandL_DisplayBehaviour,
-        KEEPFILTERS ( PandL_DisplayBehaviour[DisplayBehaviour] = "Display QTD at max month for qtr displayed only" )
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at max month for qtr displayed only" )
     )
 ) = 1
 
@@ -24,8 +76,8 @@ DisplayQTD_AtMaxMonthOnly:=COUNTROWS (
 DisplayQTD_AtNonQtrEnd:=COUNTROWS (
 //When this measure is false, the QTD P&L is only displayed at a qtr end, even if month end is the max month displayed for  given qtr
     CALCULATETABLE (
-        PandL_DisplayBehaviour,
-        KEEPFILTERS ( PandL_DisplayBehaviour[DisplayBehaviour] = "Display QTD at non-qtr end point" )
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at non-qtr end point" )
     )
 ) = 1
 
@@ -37,8 +89,8 @@ DisplayQTD_AtNonQtrEnd:=COUNTROWS (
 DisplayYTD_AtMaxMonthOnly:=COUNTROWS (
 //When this measure is false the YTD P&L is displayed for each month of year despite the fact that it is not the last month displayed in the year
     CALCULATETABLE (
-        PandL_DisplayBehaviour,
-        KEEPFILTERS ( PandL_DisplayBehaviour[DisplayBehaviour] = "Display YTD for max month of year displayed only" )
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display YTD for max month of year displayed only" )
     )
 ) = 1
 
@@ -50,8 +102,8 @@ DisplayYTD_AtMaxMonthOnly:=COUNTROWS (
 DisplayYTD_AtNonYearEnd:=COUNTROWS (
 //When this measure is false, the YTD P&L is only displayed at a year end, even if month end is the max month displayed for  given year
     CALCULATETABLE (
-        PandL_DisplayBehaviour,
-        KEEPFILTERS ( PandL_DisplayBehaviour[DisplayBehaviour] = "Display YTD at non-year end point" )
+        DisplayBehaviours,
+        KEEPFILTERS ( DisplayBehaviours[DisplayBehaviour] = "Display YTD at non-year end point" )
     )
 ) = 1
 
@@ -114,7 +166,7 @@ FinancialDataGranularitySelectedForTb:=IF(
 //     Journals
 //-------------------------------------------------------------------- 
 
-Journals:=SUM(Example_Jnls[Jnl Amount]) / [NumberScaleAdj]
+Journals:=SUM(Example_Jnls[Jnl Amount])
 
 
 //--------------------------------------------------------------------
@@ -171,6 +223,19 @@ NumberScaleAdj:=IF(
     HASONEVALUE(NumberScale[ShowValuesAs]),
     VALUES(NumberScale[DivideBy]),
     1)
+
+
+//--------------------------------------------------------------------
+//     OkToDisplayData
+//-------------------------------------------------------------------- 
+
+OkToDisplayData:=SWITCH(
+    [DataTypeSelected],
+    
+    "Journals", TRUE(),
+    
+    FALSE()
+)
 
 
 //--------------------------------------------------------------------
@@ -240,6 +305,22 @@ OkToDisplayPandL_YTD:=SWITCH(
 
 
 //--------------------------------------------------------------------
+//     OUTDATED_TB
+//-------------------------------------------------------------------- 
+
+OUTDATED_TB:=VAR _OkToDisplayTB=
+    HASONEVALUE(DateTable[EndOfMonth]) && 
+    [TimePeriodForTb] = "YTD" && 
+    [FinancialDataGranularitySelectedForTb] = "Account level"
+    
+RETURN
+    IF(
+        _OkToDisplayTB, 
+        SUM(Example_TB[Amount])
+        ) / [NumberScaleAdj]
+
+
+//--------------------------------------------------------------------
 //     P&L Account Level
 //-------------------------------------------------------------------- 
 
@@ -247,7 +328,7 @@ P&L Account Level:=VAR _LastDateSelected =
     MAX(DateTable[Date])
 
 VAR _PandL_YTD =  CALCULATE(
-        -[TB],
+        -[OUTDATED_TB],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected
         DateTable[Date] = _LastDateSelected)
@@ -255,7 +336,7 @@ VAR _PandL_YTD =  CALCULATE(
 VAR _LastDatePriorQuarter = LASTDATE(PREVIOUSQUARTER(DateTable[Date]))
 
 VAR _PandL_YTD_PriorQtrEnd =   CALCULATE(
-        -[TB],
+        -[OUTDATED_TB],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
         DateTable[Date] = _LastDatePriorQuarter)
@@ -269,7 +350,7 @@ VAR _PandL_QTD =IF(
 VAR _LastDatePriorMonth = LASTDATE(PREVIOUSMONTH(DateTable[Date]))
 
 VAR _PandL_YTD_PriorMonthEnd = CALCULATE(
-    -[TB],
+    -[OUTDATED_TB],
     KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
     TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
     DateTable[Date] = _LastDatePriorMonth)    
@@ -282,7 +363,7 @@ VAR _PandL_MTD  = IF(
 VAR _LastDatePY = LASTDATE(PREVIOUSYEAR(DateTable[Date]))
 
 VAR _PandL_PY =  CALCULATE(
-    -[TB],
+    -[OUTDATED_TB],
     KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
     TimePeriods[Time Period] = "YTD",   //Need to set this otherwise YTD tb will show blank when QTD or MTD is selected        
     DateTable[Date] = _LastDatePY) 
@@ -343,14 +424,24 @@ P&L:=SWITCH (
 
 
 //--------------------------------------------------------------------
+//     PandL_FromTB
+//-------------------------------------------------------------------- 
+
+PandL_FromTB:=CALCULATE(
+    -[TB],
+    KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
+)
+
+
+//--------------------------------------------------------------------
 //     RestrictHierarchyLevels
 //-------------------------------------------------------------------- 
 
 RestrictHierarchyLevels:=COUNTROWS (
 //Normally P&L display is restricted to certail levels depending on account.  If this measure is FALSE the restriction is removed
     CALCULATETABLE (
-        PandL_DisplayBehaviour,
-        KEEPFILTERS ( PandL_DisplayBehaviour[DisplayBehaviour] = "Restrict hierarchy levels" )
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Restrict hierarchy levels" )
     )
 ) = 1
 
@@ -359,16 +450,7 @@ RestrictHierarchyLevels:=COUNTROWS (
 //     TB
 //-------------------------------------------------------------------- 
 
-TB:=VAR _OkToDisplayTB=
-    HASONEVALUE(DateTable[EndOfMonth]) && 
-    [TimePeriodForTb] = "YTD" && 
-    [FinancialDataGranularitySelectedForTb] = "Account level"
-    
-RETURN
-    IF(
-        _OkToDisplayTB, 
-        SUM(Example_TB[Amount])
-        ) / [NumberScaleAdj]
+TB:=SUM(Example_TB[Amount])
 
 
 //--------------------------------------------------------------------
@@ -393,3 +475,46 @@ TimePeriodForTb:=IF(
     VALUES(TimePeriods[Time Period]),
     "YTD"
     )
+
+
+//--------------------------------------------------------------------
+//     TimePeriodSelected
+//-------------------------------------------------------------------- 
+
+TimePeriodSelected:=SWITCH(
+    TRUE(),
+    HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
+    ISFILTERED(TimePeriods[Time Period]), BLANK(),   //Dont allow values to be displayed unless one or all items are selected
+    [DataTypeSelected] = "Journals", "All",
+    [DataTypeSelected] = "TB", "Point in time"
+)
+
+
+//--------------------------------------------------------------------
+//     Transactions
+//-------------------------------------------------------------------- 
+
+Transactions:=VAR _YTD =  CALCULATE(
+    [DataMeasureSelected],
+    DATESYTD(DateTable[Date]))
+
+VAR _QTD =  CALCULATE(
+    [DataMeasureSelected],
+    DATESQTD(DateTable[Date]))
+
+VAR _MTD = CALCULATE(
+    [DataMeasureSelected],
+    DATESMTD(DateTable[Date]))
+
+VAR _PY = CALCULATE(
+    [DataMeasureSelected],
+    PREVIOUSYEAR(DateTable[Date]))
+        
+RETURN
+    SWITCH(
+        TRUE(),
+        [TimePeriodForPandL] = "YTD" && [OkToDisplayPandL_YTD],  _YTD,
+        [TimePeriodForPandL] = "QTD" && [OkToDisplayPandL_QTD],_QTD,
+        [TimePeriodForPandL] = "MTD" && [OkToDisplayPandL_MTD],_MTD,
+        [TimePeriodForPandL] = "PY" && [OkToDisplayPandL_PY], _PY
+        )
