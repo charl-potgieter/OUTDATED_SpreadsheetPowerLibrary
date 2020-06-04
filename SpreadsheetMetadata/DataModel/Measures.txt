@@ -22,17 +22,29 @@ IF(
             DateTable[QuarterInCalendar] = _Qtr
     )
 )
-DataMeasureSelected|True|[Measures].[DataMeasureSelected]|:=SWITCH(
-    [DataTypeSelected], 
-    "Journals", [Journals],
-    "TB", [TB],
-    "P&L (from tb)", [PandL_FromTB]
-)|DataMeasureSelected:=SWITCH(
-    [DataTypeSelected], 
-    "Journals", [Journals],
-    "TB", [TB],
-    "P&L (from tb)", [PandL_FromTB]
-)
+Count of Granularity|True|[Measures].[Count of Granularity]|:=COUNTA('FinancialDataGranularity'[Granularity])|Count of Granularity:=COUNTA('FinancialDataGranularity'[Granularity])
+DataMeasureCalculationMethod|True|[Measures].[DataMeasureCalculationMethod]|:=VAR _DataTypeSelection = 
+    [DataTypeSelected]
+RETURN
+    CALCULATE(
+        VALUES(DataTypes[Calculation method]),
+        DataTypes[Data Type]  = _DataTypeSelection)|DataMeasureCalculationMethod:=VAR _DataTypeSelection = 
+    [DataTypeSelected]
+RETURN
+    CALCULATE(
+        VALUES(DataTypes[Calculation method]),
+        DataTypes[Data Type]  = _DataTypeSelection)
+DataMeasureTimeGranularity|True|[Measures].[DataMeasureTimeGranularity]|:=VAR _DataTypeSelection = 
+    [DataTypeSelected]
+RETURN
+    CALCULATE(
+        VALUES(DataTypes[Minimum time granularity]),
+        DataTypes[Data Type]  = _DataTypeSelection)|DataMeasureTimeGranularity:=VAR _DataTypeSelection = 
+    [DataTypeSelected]
+RETURN
+    CALCULATE(
+        VALUES(DataTypes[Minimum time granularity]),
+        DataTypes[Data Type]  = _DataTypeSelection)
 DataTypeSelected|True|[Measures].[DataTypeSelected]|:=SWITCH(
     TRUE(),
     HASONEVALUE(DataTypes[Data Type]), VALUES(DataTypes[Data Type]),
@@ -159,7 +171,6 @@ FinancialDataGranularitySelectedForTb|False|[Measures].[FinancialDataGranularity
     HASONEVALUE(FinancialDataGranularity[Granularity]),
     VALUES(FinancialDataGranularity[Granularity]),
     "Account level")
-Journals|True|[Measures].[Journals]|:=SUM(Example_Jnls[Jnl Amount])|Journals:=SUM(Example_Jnls[Jnl Amount])
 MaxAllSelectedDates|True|[Measures].[MaxAllSelectedDates]|:=CALCULATE(
         MAX(DateTable[Date]),
         ALLSELECTED(DateTable)
@@ -213,6 +224,92 @@ IF(
             DateTable[Year] = _Year
     )
 )
+NoFilterAtDateLevel|True|[Measures].[NoFilterAtDateLevel]|:=VAR _StartOfFirstMonth = 
+    EOMONTH(MIN(DateTable[Date]), -1) + 1
+    
+VAR _EndOfLastMonthEnd = 
+    EOMONTH(MAX(DateTable[Date]), 0)
+
+VAR _IsUnfilteredWholeMonthRange = 
+   COUNTROWS(DateTable) = (_EndOfLastMonthEnd - _StartOfFirstMonth +1)
+
+VAR _IsSingleEndOfMonthDate = 
+    SWITCH(
+        TRUE(),
+        NOT(HASONEVALUE(DateTable[Date])), FALSE,
+        VALUES(DateTable[IsEndOfMonth]), TRUE(),
+        FALSE()
+    )
+
+VAR _ReturnValue = 
+    _IsUnfilteredWholeMonthRange || _IsSingleEndOfMonthDate
+        
+RETURN 
+    _ReturnValue|NoFilterAtDateLevel:=VAR _StartOfFirstMonth = 
+    EOMONTH(MIN(DateTable[Date]), -1) + 1
+    
+VAR _EndOfLastMonthEnd = 
+    EOMONTH(MAX(DateTable[Date]), 0)
+
+VAR _IsUnfilteredWholeMonthRange = 
+   COUNTROWS(DateTable) = (_EndOfLastMonthEnd - _StartOfFirstMonth +1)
+
+VAR _IsSingleEndOfMonthDate = 
+    SWITCH(
+        TRUE(),
+        NOT(HASONEVALUE(DateTable[Date])), FALSE,
+        VALUES(DateTable[IsEndOfMonth]), TRUE(),
+        FALSE()
+    )
+
+VAR _ReturnValue = 
+    _IsUnfilteredWholeMonthRange || _IsSingleEndOfMonthDate
+        
+RETURN 
+    _ReturnValue
+NoFilterAtMonthLevel|True|[Measures].[NoFilterAtMonthLevel]|:=VAR _StartOfFirstQtr = 
+    STARTOFQUARTER(DateTable[Date])
+    
+VAR _EndOfLastQtr = 
+    ENDOFQUARTER(DateTable[Date])
+
+VAR _IsUnfilteredWholeQtrRange = 
+   COUNTROWS(DateTable) = (_EndOfLastQtr - _StartOfFirstQtr +1)
+
+VAR _IsSingleEndOfQtrDate = 
+    SWITCH(
+        TRUE(),
+        NOT(HASONEVALUE(DateTable[EndOfMonth])), FALSE,
+        MAX(DateTable[Date]) = _EndOfLastQtr, TRUE(),
+        FALSE()
+    )
+
+VAR _ReturnValue = 
+    _IsUnfilteredWholeQtrRange || _IsSingleEndOfQtrDate
+        
+RETURN 
+    _ReturnValue|NoFilterAtMonthLevel:=VAR _StartOfFirstQtr = 
+    STARTOFQUARTER(DateTable[Date])
+    
+VAR _EndOfLastQtr = 
+    ENDOFQUARTER(DateTable[Date])
+
+VAR _IsUnfilteredWholeQtrRange = 
+   COUNTROWS(DateTable) = (_EndOfLastQtr - _StartOfFirstQtr +1)
+
+VAR _IsSingleEndOfQtrDate = 
+    SWITCH(
+        TRUE(),
+        NOT(HASONEVALUE(DateTable[EndOfMonth])), FALSE,
+        MAX(DateTable[Date]) = _EndOfLastQtr, TRUE(),
+        FALSE()
+    )
+
+VAR _ReturnValue = 
+    _IsUnfilteredWholeQtrRange || _IsSingleEndOfQtrDate
+        
+RETURN 
+    _ReturnValue
 NumberScaleAdj|False|[Measures].[NumberScaleAdj]|:=IF(
     HASONEVALUE(NumberScale[ShowValuesAs]),
     VALUES(NumberScale[DivideBy]),
@@ -220,19 +317,52 @@ NumberScaleAdj|False|[Measures].[NumberScaleAdj]|:=IF(
     HASONEVALUE(NumberScale[ShowValuesAs]),
     VALUES(NumberScale[DivideBy]),
     1)
-OkToDisplayData|True|[Measures].[OkToDisplayData]|:=SWITCH(
-    [DataTypeSelected],
-    
-    "Journals", TRUE(),
-    
-    FALSE()
-)|OkToDisplayData:=SWITCH(
-    [DataTypeSelected],
-    
-    "Journals", TRUE(),
-    
-    FALSE()
+OkToDisplayAtTimeLevelGranularity|True|[Measures].[OkToDisplayAtTimeLevelGranularity]|:=SWITCH(
+    [DataMeasureTimeGranularity], 
+    "Date", TRUE(), 
+    "Month", [NoFilterAtDateLevel], 
+    "Quarter", [NoFilterAtMonthLevel]
+)|OkToDisplayAtTimeLevelGranularity:=SWITCH(
+    [DataMeasureTimeGranularity], 
+    "Date", TRUE(), 
+    "Month", [NoFilterAtDateLevel], 
+    "Quarter", [NoFilterAtMonthLevel]
 )
+OkToDisplayDataAsAtDate|True|[Measures].[OkToDisplayDataAsAtDate]|:=TRUE()|OkToDisplayDataAsAtDate:=TRUE()
+OkToDisplayDataAsAtMonthEnd|True|[Measures].[OkToDisplayDataAsAtMonthEnd]|:=TRUE()|OkToDisplayDataAsAtMonthEnd:=TRUE()
+OkToDisplayDataMTD|True|[Measures].[OkToDisplayDataMTD]|:=HASONEVALUE(DateTable[EndOfMonth])|OkToDisplayDataMTD:=HASONEVALUE(DateTable[EndOfMonth])
+OkToDisplayDataPY|True|[Measures].[OkToDisplayDataPY]|:=TRUE()|OkToDisplayDataPY:=TRUE()
+OkToDisplayDataQTD|True|[Measures].[OkToDisplayDataQTD]|:=SWITCH(
+    TRUE,
+    NOT(HASONEVALUE (DateTable[EndOfQtr])), FALSE(), 
+    MAX (DateTable[Date]) = VALUES(DateTable[EndOfQtr]), TRUE() ,      //Date is the last day of the quarter
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
+    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayQTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
+    FALSE()
+    )|OkToDisplayDataQTD:=SWITCH(
+    TRUE,
+    NOT(HASONEVALUE (DateTable[EndOfQtr])), FALSE(), 
+    MAX (DateTable[Date]) = VALUES(DateTable[EndOfQtr]), TRUE() ,      //Date is the last day of the quarter
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
+    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayQTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
+    FALSE()
+    )
+OkToDisplayDataTotal|True|[Measures].[OkToDisplayDataTotal]|:=TRUE()|OkToDisplayDataTotal:=TRUE()
+OkToDisplayDataYTD|True|[Measures].[OkToDisplayDataYTD]|:=SWITCH(
+    TRUE,
+    NOT(HASONEVALUE (DateTable[Year])), FALSE(), 
+    MAX (DateTable[Date]) = VALUES(DateTable[EndOfYear]), TRUE() ,      //Date is the last day of the year
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
+    NOT ([DisplayYTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
+    FALSE()
+    )|OkToDisplayDataYTD:=SWITCH(
+    TRUE,
+    NOT(HASONEVALUE (DateTable[Year])), FALSE(), 
+    MAX (DateTable[Date]) = VALUES(DateTable[EndOfYear]), TRUE() ,      //Date is the last day of the year
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
+    NOT ([DisplayYTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
+    FALSE()
+    )
 OkToDisplayPandL|False|[Measures].[OkToDisplayPandL]|:=VAR _NoGapsInDateRange = 
     COUNT(DateTable[Date]) = (MAX(DateTable[Date]) - MIN(DateTable[Date]) +1)
 
@@ -300,6 +430,19 @@ OkToDisplayPandL_YTD|False|[Measures].[OkToDisplayPandL_YTD]|:=SWITCH(
     HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayYTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
     FALSE()
     )
+OkToDisplayRawData|True|[Measures].[OkToDisplayRawData]|:=SWITCH(
+    [DataTypeSelected],
+    
+    "Journals", TRUE(),
+    
+    FALSE()
+)|OkToDisplayRawData:=SWITCH(
+    [DataTypeSelected],
+    
+    "Journals", TRUE(),
+    
+    FALSE()
+)
 OUTDATED_TB|True|[Measures].[OUTDATED_TB]|:=VAR _OkToDisplayTB=
     HASONEVALUE(DateTable[EndOfMonth]) && 
     [TimePeriodForTb] = "YTD" && 
@@ -423,22 +566,22 @@ RETURN
         [TimePeriodForPandL] = "PY" && [OkToDisplayPandL_PY], _PandL_PY
         )
 P&L Journal Level|False|[Measures].[P&L Journal Level]|:=VAR _PandL_YTD =  CALCULATE(
-        -[Journals],
+        -[Raw_Journals],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         DATESYTD(DateTable[Date]))
 
 VAR _PandL_QTD =  CALCULATE(
-        -[Journals],
+        -[Raw_Journals],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         DATESQTD(DateTable[Date]))
 
 VAR _PandL_MTD = CALCULATE(
-        -[Journals],
+        -[Raw_Journals],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         DATESMTD(DateTable[Date]))
 
 VAR _PandL_PY = CALCULATE(
-        -[Journals],
+        -[Raw_Journals],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         PREVIOUSYEAR(DateTable[Date]))
         
@@ -450,22 +593,22 @@ RETURN
         [TimePeriodForPandL] = "MTD" && [OkToDisplayPandL_MTD], _PandL_MTD,
         [TimePeriodForPandL] = "PY" && [OkToDisplayPandL_PY], _PandL_PY
         )|P&L Journal Level:=VAR _PandL_YTD =  CALCULATE(
-        -[Journals],
+        -[Raw_Journals],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         DATESYTD(DateTable[Date]))
 
 VAR _PandL_QTD =  CALCULATE(
-        -[Journals],
+        -[Raw_Journals],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         DATESQTD(DateTable[Date]))
 
 VAR _PandL_MTD = CALCULATE(
-        -[Journals],
+        -[Raw_Journals],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         DATESMTD(DateTable[Date]))
 
 VAR _PandL_PY = CALCULATE(
-        -[Journals],
+        -[Raw_Journals],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
         PREVIOUSYEAR(DateTable[Date]))
         
@@ -486,13 +629,26 @@ P&L|True|[Measures].[P&L]|:=SWITCH (
     "Account level", [P&L Account Level],
     "Journal level", [P&L Journal Level]
 )
-PandL_FromTB|True|[Measures].[PandL_FromTB]|:=CALCULATE(
-    -[TB],
+Raw_Journals|True|[Measures].[Raw_Journals]|:=SUM(Example_Jnls[Jnl Amount])|Raw_Journals:=SUM(Example_Jnls[Jnl Amount])
+Raw_PandL_FromTB|True|[Measures].[Raw_PandL_FromTB]|:=CALCULATE(
+    -[Raw_TB],
     KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
-)|PandL_FromTB:=CALCULATE(
-    -[TB],
+)|Raw_PandL_FromTB:=CALCULATE(
+    -[Raw_TB],
     KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
 )
+Raw_TB|True|[Measures].[Raw_TB]|:=SUM(Example_TB[Amount])|Raw_TB:=SUM(Example_TB[Amount])
+RawDataMeasureSelected|True|[Measures].[RawDataMeasureSelected]|:=SWITCH(
+        [DataTypeSelected], 
+        "Journals", [Raw_Journals],
+        "TB", [Raw_TB],
+        "P&L (from tb)", [Raw_PandL_FromTB]
+    )|RawDataMeasureSelected:=SWITCH(
+        [DataTypeSelected], 
+        "Journals", [Raw_Journals],
+        "TB", [Raw_TB],
+        "P&L (from tb)", [Raw_PandL_FromTB]
+    )
 RestrictHierarchyLevels|False|[Measures].[RestrictHierarchyLevels]|:=COUNTROWS (
 //Normally P&L display is restricted to certail levels depending on account.  If this measure is FALSE the restriction is removed
     CALCULATETABLE (
@@ -506,7 +662,6 @@ RestrictHierarchyLevels|False|[Measures].[RestrictHierarchyLevels]|:=COUNTROWS (
         KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Restrict hierarchy levels" )
     )
 ) = 1
-TB|True|[Measures].[TB]|:=SUM(Example_TB[Amount])|TB:=SUM(Example_TB[Amount])
 TimePeriodForPandL|False|[Measures].[TimePeriodForPandL]|:=SWITCH(
       //  Cant just rely on HASONEVALUE, otherwise for example MTD numbers are geneterated when both YTD and QTD are selected
     TRUE(),
@@ -533,59 +688,77 @@ TimePeriodSelected|True|[Measures].[TimePeriodSelected]|:=SWITCH(
     TRUE(),
     HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
     ISFILTERED(TimePeriods[Time Period]), BLANK(),   //Dont allow values to be displayed unless one or all items are selected
-    [DataTypeSelected] = "Journals", "All",
-    [DataTypeSelected] = "TB", "Point in time"
+    [DataTypeSelected] = "Journals", "Total",
+    [DataTypeSelected] = "TB", "As at month end"
 )|TimePeriodSelected:=SWITCH(
     TRUE(),
     HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
     ISFILTERED(TimePeriods[Time Period]), BLANK(),   //Dont allow values to be displayed unless one or all items are selected
-    [DataTypeSelected] = "Journals", "All",
-    [DataTypeSelected] = "TB", "Point in time"
+    [DataTypeSelected] = "Journals", "Total",
+    [DataTypeSelected] = "TB", "As at month end"
 )
-Transactions|True|[Measures].[Transactions]|:=VAR _YTD =  CALCULATE(
-    [DataMeasureSelected],
+Transactions (sum of transactions)|True|[Measures].[Transactions (sum of transactions)]|:=VAR _YTD =  CALCULATE(
+    [RawDataMeasureSelected],
     DATESYTD(DateTable[Date]))
 
 VAR _QTD =  CALCULATE(
-    [DataMeasureSelected],
+    [RawDataMeasureSelected],
     DATESQTD(DateTable[Date]))
 
 VAR _MTD = CALCULATE(
-    [DataMeasureSelected],
+    [RawDataMeasureSelected],
     DATESMTD(DateTable[Date]))
 
 VAR _PY = CALCULATE(
-    [DataMeasureSelected],
+    [RawDataMeasureSelected],
     PREVIOUSYEAR(DateTable[Date]))
+
+VAR _Total =  [RawDataMeasureSelected]
+
+VAR _AsAtDate = "TBA"
+
+VAR _AsAtMonthEnd = "TBA"
         
 RETURN
     SWITCH(
         TRUE(),
-        [TimePeriodForPandL] = "YTD" && [OkToDisplayPandL_YTD],  _YTD,
-        [TimePeriodForPandL] = "QTD" && [OkToDisplayPandL_QTD],_QTD,
-        [TimePeriodForPandL] = "MTD" && [OkToDisplayPandL_MTD],_MTD,
-        [TimePeriodForPandL] = "PY" && [OkToDisplayPandL_PY], _PY
-        )|Transactions:=VAR _YTD =  CALCULATE(
-    [DataMeasureSelected],
+        [TimePeriodSelected] = "MTD" && [OkToDisplayDataMTD],_MTD,
+        [TimePeriodSelected] = "QTD" && [OkToDisplayDataQTD],_QTD,
+        [TimePeriodSelected] = "YTD" && [OkToDisplayDataYTD],  _YTD,
+        [TimePeriodSelected] = "PY" && [OkToDisplayDataPY], _PY, 
+        [TimePeriodSelected] = "Total" && [OkToDisplayDataTotal], _Total, 
+        [TimePeriodSelected] = "As at date" && [OkToDisplayDataAsAtDate], _AsAtDate, 
+        [TimePeriodSelected] = "As at month end" && [OkToDisplayDataAsAtMonthEnd], _AsAtMonthEnd
+        )|Transactions (sum of transactions):=VAR _YTD =  CALCULATE(
+    [RawDataMeasureSelected],
     DATESYTD(DateTable[Date]))
 
 VAR _QTD =  CALCULATE(
-    [DataMeasureSelected],
+    [RawDataMeasureSelected],
     DATESQTD(DateTable[Date]))
 
 VAR _MTD = CALCULATE(
-    [DataMeasureSelected],
+    [RawDataMeasureSelected],
     DATESMTD(DateTable[Date]))
 
 VAR _PY = CALCULATE(
-    [DataMeasureSelected],
+    [RawDataMeasureSelected],
     PREVIOUSYEAR(DateTable[Date]))
+
+VAR _Total =  [RawDataMeasureSelected]
+
+VAR _AsAtDate = "TBA"
+
+VAR _AsAtMonthEnd = "TBA"
         
 RETURN
     SWITCH(
         TRUE(),
-        [TimePeriodForPandL] = "YTD" && [OkToDisplayPandL_YTD],  _YTD,
-        [TimePeriodForPandL] = "QTD" && [OkToDisplayPandL_QTD],_QTD,
-        [TimePeriodForPandL] = "MTD" && [OkToDisplayPandL_MTD],_MTD,
-        [TimePeriodForPandL] = "PY" && [OkToDisplayPandL_PY], _PY
+        [TimePeriodSelected] = "MTD" && [OkToDisplayDataMTD],_MTD,
+        [TimePeriodSelected] = "QTD" && [OkToDisplayDataQTD],_QTD,
+        [TimePeriodSelected] = "YTD" && [OkToDisplayDataYTD],  _YTD,
+        [TimePeriodSelected] = "PY" && [OkToDisplayDataPY], _PY, 
+        [TimePeriodSelected] = "Total" && [OkToDisplayDataTotal], _Total, 
+        [TimePeriodSelected] = "As at date" && [OkToDisplayDataAsAtDate], _AsAtDate, 
+        [TimePeriodSelected] = "As at month end" && [OkToDisplayDataAsAtMonthEnd], _AsAtMonthEnd
         )

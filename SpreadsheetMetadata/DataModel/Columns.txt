@@ -2,6 +2,7 @@ Name|Table Name|Unique Name|Visible
 Calculation method|DataTypes|[DataTypes].[Calculation method]|True
 Data Type|DataTypes|[DataTypes].[Data Type]|True
 Default|DataTypes|[DataTypes].[Default]|True
+Minimum time granularity|DataTypes|[DataTypes].[Minimum time granularity]|True
 Time Class|DataTypes|[DataTypes].[Time Class]|True
 Date|DateTable|[DateTable].[Date]|True
 DateInt|DateTable|[DateTable].[DateInt]|True

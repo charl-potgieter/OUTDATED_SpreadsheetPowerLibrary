@@ -1,14 +1,18 @@
-Create Generic (hidden measures) based off the P&L versions of:
- - OKToDisplayYTD
- - OKToDisplayQTD
- - OKToDisplayMTD
- - OkToDisplayPY
- - OkToDisplayAll
- - OkToDisplayPointInTime
+Create a NoFilterAtQtrLevel similiar to NoFilterAtMonthLevel (in Measures_DataCalculation table)
+
+Update OkToDisplayAtTimeGranularity measure to include the above when [DataMeasureTimeGranularity] = "Year"
+
+ Use OkToDisplayAtTimeGranularity measure to
+ test for level of granularity before display of data measure.
+
+
+Create an example of day level data
+
+Don't bundle the OKToDisplayRawData measure into above.  Rather test for them seperately in the transactions measure
 
 Next work on OkToDisplayData (in Measures_DataCalculations) which references the above and adds items depending on DataTypeSelected
 
-Can I generalise the p&l measures to be broader than just p&l.  In essence these are simply difference between dates and point in time measures.  They could also be used for  tbs of different sorts etc.   There are really 3 calculation methods
+Can I generalise the p&l measures to be broader than just p&l.  In essence these are simply difference between dates and point in time measures.  They could also be used for  tbs of different sorts etc.   There are really 3 WWITcalculation methods
 - point in time
 - movement between points in time
 - sum of transactions
