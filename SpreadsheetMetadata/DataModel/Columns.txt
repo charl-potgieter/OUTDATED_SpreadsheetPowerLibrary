@@ -24,6 +24,7 @@ QuarterInCalendar|DateTable|[DateTable].[QuarterInCalendar]|True
 QuarterOfYear|DateTable|[DateTable].[QuarterOfYear]|True
 Year|DateTable|[DateTable].[Year]|True
 DisplayBehaviour|DisplayBehaviours|[DisplayBehaviours].[DisplayBehaviour]|True
+SortByCol|DisplayBehaviours|[DisplayBehaviours].[SortByCol]|True
 Account Category 1|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Category 1]|True
 Account Category 2|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Category 2]|True
 Account Category 3|Example_ChartOfAccounts|[Example_ChartOfAccounts].[Account Category 3]|True
@@ -56,6 +57,7 @@ NullHeader|Measures_DataCalculations|[Measures_DataCalculations].[NullHeader]|Tr
 NullHeader|Measures_ErrorChecks|[Measures_ErrorChecks].[NullHeader]|True
 NullHeader|Measures_PandL|[Measures_PandL].[NullHeader]|True
 NullHeader|Measures_RawData|[Measures_RawData].[NullHeader]|True
+NullHeader|Measures_SelectableDisplayBehaviours|[Measures_SelectableDisplayBehaviours].[NullHeader]|True
 NullHeader|Measures_Sundry|[Measures_Sundry].[NullHeader]|True
 NullHeader|Measures_TrialBalance|[Measures_TrialBalance].[NullHeader]|True
 DivideBy|NumberScale|[NumberScale].[DivideBy]|True

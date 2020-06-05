@@ -22,6 +22,69 @@ IF(
             DateTable[QuarterInCalendar] = _Qtr
     )
 )
+ContextIncludesWholeMonthsOnly|True|[Measures].[ContextIncludesWholeMonthsOnly]|:=VAR _StartOfFirstMonth = 
+    EOMONTH(MIN(DateTable[Date]), -1) + 1
+    
+VAR _EndOfLastMonthEnd = 
+    EOMONTH(MAX(DateTable[Date]), 0)
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastMonthEnd - _StartOfFirstMonth +1)
+      
+RETURN 
+    _ReturnValue|ContextIncludesWholeMonthsOnly:=VAR _StartOfFirstMonth = 
+    EOMONTH(MIN(DateTable[Date]), -1) + 1
+    
+VAR _EndOfLastMonthEnd = 
+    EOMONTH(MAX(DateTable[Date]), 0)
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastMonthEnd - _StartOfFirstMonth +1)
+      
+RETURN 
+    _ReturnValue
+ContextIncludesWholeQuartersOnly|True|[Measures].[ContextIncludesWholeQuartersOnly]|:=VAR _StartOfFirstQtr = 
+    STARTOFQUARTER(DateTable[Date])
+    
+VAR _EndOfLastQtr = 
+    ENDOFQUARTER(DateTable[Date])
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastQtr - _StartOfFirstQtr +1)
+      
+RETURN 
+    _ReturnValue|ContextIncludesWholeQuartersOnly:=VAR _StartOfFirstQtr = 
+    STARTOFQUARTER(DateTable[Date])
+    
+VAR _EndOfLastQtr = 
+    ENDOFQUARTER(DateTable[Date])
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastQtr - _StartOfFirstQtr +1)
+      
+RETURN 
+    _ReturnValue
+ContextIncludesWholeYearsOnly|True|[Measures].[ContextIncludesWholeYearsOnly]|:=VAR _StartOfFirstYear = 
+    DATE(YEAR(MIN(DateTable[Date])), 1, 1)
+    
+VAR _EndOfLastYear = 
+    DATE(YEAR(MAX(DateTable[Date])), 12, 31)
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastYear - _StartOfFirstYear +1)
+      
+RETURN 
+    _ReturnValue|ContextIncludesWholeYearsOnly:=VAR _StartOfFirstYear = 
+    DATE(YEAR(MIN(DateTable[Date])), 1, 1)
+    
+VAR _EndOfLastYear = 
+    DATE(YEAR(MAX(DateTable[Date])), 12, 31)
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastYear - _StartOfFirstYear +1)
+      
+RETURN 
+    _ReturnValue
 Count of Granularity|True|[Measures].[Count of Granularity]|:=COUNTA('FinancialDataGranularity'[Granularity])|Count of Granularity:=COUNTA('FinancialDataGranularity'[Granularity])
 DataMeasureCalculationMethod|True|[Measures].[DataMeasureCalculationMethod]|:=VAR _DataTypeSelection = 
     [DataTypeSelected]
@@ -63,7 +126,33 @@ DefaultDataType|True|[Measures].[DefaultDataType]|:=CALCULATE(
     FIRSTNONBLANK(DataTypes[Data Type], TRUE()),
     DataTypes[Default] = TRUE()
 )
-DisplayQTD_AtMaxMonthOnly|False|[Measures].[DisplayQTD_AtMaxMonthOnly]|:=COUNTROWS (
+DisplayMTD_AtMaxDateOnly|True|[Measures].[DisplayMTD_AtMaxDateOnly]|:=COUNTROWS (
+//When this measure is false the MTD calculations are displayed for each date in teh month despite the fact that it is not the last date displayed in the month
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at max month for qtr displayed only" )
+    )
+) = 1|DisplayMTD_AtMaxDateOnly:=COUNTROWS (
+//When this measure is false the MTD calculations are displayed for each date in teh month despite the fact that it is not the last date displayed in the month
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at max month for qtr displayed only" )
+    )
+) = 1
+DisplayMTD_AtNonMonthEnd|True|[Measures].[DisplayMTD_AtNonMonthEnd]|:=COUNTROWS (
+//When this measure is false, the QTD P&L is only displayed at a qtr end, even if month end is the max month displayed for  given qtr
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display MTD at non-month end date" )
+    )
+) = 1|DisplayMTD_AtNonMonthEnd:=COUNTROWS (
+//When this measure is false, the QTD P&L is only displayed at a qtr end, even if month end is the max month displayed for  given qtr
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display MTD at non-month end date" )
+    )
+) = 1
+DisplayQTD_AtMaxMonthOnly|True|[Measures].[DisplayQTD_AtMaxMonthOnly]|:=COUNTROWS (
 //When this measure is false the QTD P&L is displayed for each month of qtr despite the fact that it is not the last month displayed in the qtr
     CALCULATETABLE (
         DisplayBehaviours,
@@ -76,7 +165,7 @@ DisplayQTD_AtMaxMonthOnly|False|[Measures].[DisplayQTD_AtMaxMonthOnly]|:=COUNTRO
         KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at max month for qtr displayed only" )
     )
 ) = 1
-DisplayQTD_AtNonQtrEnd|False|[Measures].[DisplayQTD_AtNonQtrEnd]|:=COUNTROWS (
+DisplayQTD_AtNonQtrEnd|True|[Measures].[DisplayQTD_AtNonQtrEnd]|:=COUNTROWS (
 //When this measure is false, the QTD P&L is only displayed at a qtr end, even if month end is the max month displayed for  given qtr
     CALCULATETABLE (
         DisplayBehaviours,
@@ -89,7 +178,7 @@ DisplayQTD_AtNonQtrEnd|False|[Measures].[DisplayQTD_AtNonQtrEnd]|:=COUNTROWS (
         KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at non-qtr end point" )
     )
 ) = 1
-DisplayYTD_AtMaxMonthOnly|False|[Measures].[DisplayYTD_AtMaxMonthOnly]|:=COUNTROWS (
+DisplayYTD_AtMaxMonthOnly|True|[Measures].[DisplayYTD_AtMaxMonthOnly]|:=COUNTROWS (
 //When this measure is false the YTD P&L is displayed for each month of year despite the fact that it is not the last month displayed in the year
     CALCULATETABLE (
         DisplayBehaviours,
@@ -102,7 +191,7 @@ DisplayYTD_AtMaxMonthOnly|False|[Measures].[DisplayYTD_AtMaxMonthOnly]|:=COUNTRO
         KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display YTD for max month of year displayed only" )
     )
 ) = 1
-DisplayYTD_AtNonYearEnd|False|[Measures].[DisplayYTD_AtNonYearEnd]|:=COUNTROWS (
+DisplayYTD_AtNonYearEnd|True|[Measures].[DisplayYTD_AtNonYearEnd]|:=COUNTROWS (
 //When this measure is false, the YTD P&L is only displayed at a year end, even if month end is the max month displayed for  given year
     CALCULATETABLE (
         DisplayBehaviours,
@@ -224,92 +313,6 @@ IF(
             DateTable[Year] = _Year
     )
 )
-NoFilterAtDateLevel|True|[Measures].[NoFilterAtDateLevel]|:=VAR _StartOfFirstMonth = 
-    EOMONTH(MIN(DateTable[Date]), -1) + 1
-    
-VAR _EndOfLastMonthEnd = 
-    EOMONTH(MAX(DateTable[Date]), 0)
-
-VAR _IsUnfilteredWholeMonthRange = 
-   COUNTROWS(DateTable) = (_EndOfLastMonthEnd - _StartOfFirstMonth +1)
-
-VAR _IsSingleEndOfMonthDate = 
-    SWITCH(
-        TRUE(),
-        NOT(HASONEVALUE(DateTable[Date])), FALSE,
-        VALUES(DateTable[IsEndOfMonth]), TRUE(),
-        FALSE()
-    )
-
-VAR _ReturnValue = 
-    _IsUnfilteredWholeMonthRange || _IsSingleEndOfMonthDate
-        
-RETURN 
-    _ReturnValue|NoFilterAtDateLevel:=VAR _StartOfFirstMonth = 
-    EOMONTH(MIN(DateTable[Date]), -1) + 1
-    
-VAR _EndOfLastMonthEnd = 
-    EOMONTH(MAX(DateTable[Date]), 0)
-
-VAR _IsUnfilteredWholeMonthRange = 
-   COUNTROWS(DateTable) = (_EndOfLastMonthEnd - _StartOfFirstMonth +1)
-
-VAR _IsSingleEndOfMonthDate = 
-    SWITCH(
-        TRUE(),
-        NOT(HASONEVALUE(DateTable[Date])), FALSE,
-        VALUES(DateTable[IsEndOfMonth]), TRUE(),
-        FALSE()
-    )
-
-VAR _ReturnValue = 
-    _IsUnfilteredWholeMonthRange || _IsSingleEndOfMonthDate
-        
-RETURN 
-    _ReturnValue
-NoFilterAtMonthLevel|True|[Measures].[NoFilterAtMonthLevel]|:=VAR _StartOfFirstQtr = 
-    STARTOFQUARTER(DateTable[Date])
-    
-VAR _EndOfLastQtr = 
-    ENDOFQUARTER(DateTable[Date])
-
-VAR _IsUnfilteredWholeQtrRange = 
-   COUNTROWS(DateTable) = (_EndOfLastQtr - _StartOfFirstQtr +1)
-
-VAR _IsSingleEndOfQtrDate = 
-    SWITCH(
-        TRUE(),
-        NOT(HASONEVALUE(DateTable[EndOfMonth])), FALSE,
-        MAX(DateTable[Date]) = _EndOfLastQtr, TRUE(),
-        FALSE()
-    )
-
-VAR _ReturnValue = 
-    _IsUnfilteredWholeQtrRange || _IsSingleEndOfQtrDate
-        
-RETURN 
-    _ReturnValue|NoFilterAtMonthLevel:=VAR _StartOfFirstQtr = 
-    STARTOFQUARTER(DateTable[Date])
-    
-VAR _EndOfLastQtr = 
-    ENDOFQUARTER(DateTable[Date])
-
-VAR _IsUnfilteredWholeQtrRange = 
-   COUNTROWS(DateTable) = (_EndOfLastQtr - _StartOfFirstQtr +1)
-
-VAR _IsSingleEndOfQtrDate = 
-    SWITCH(
-        TRUE(),
-        NOT(HASONEVALUE(DateTable[EndOfMonth])), FALSE,
-        MAX(DateTable[Date]) = _EndOfLastQtr, TRUE(),
-        FALSE()
-    )
-
-VAR _ReturnValue = 
-    _IsUnfilteredWholeQtrRange || _IsSingleEndOfQtrDate
-        
-RETURN 
-    _ReturnValue
 NumberScaleAdj|False|[Measures].[NumberScaleAdj]|:=IF(
     HASONEVALUE(NumberScale[ShowValuesAs]),
     VALUES(NumberScale[DivideBy]),
@@ -317,17 +320,6 @@ NumberScaleAdj|False|[Measures].[NumberScaleAdj]|:=IF(
     HASONEVALUE(NumberScale[ShowValuesAs]),
     VALUES(NumberScale[DivideBy]),
     1)
-OkToDisplayAtTimeLevelGranularity|True|[Measures].[OkToDisplayAtTimeLevelGranularity]|:=SWITCH(
-    [DataMeasureTimeGranularity], 
-    "Date", TRUE(), 
-    "Month", [NoFilterAtDateLevel], 
-    "Quarter", [NoFilterAtMonthLevel]
-)|OkToDisplayAtTimeLevelGranularity:=SWITCH(
-    [DataMeasureTimeGranularity], 
-    "Date", TRUE(), 
-    "Month", [NoFilterAtDateLevel], 
-    "Quarter", [NoFilterAtMonthLevel]
-)
 OkToDisplayDataAsAtDate|True|[Measures].[OkToDisplayDataAsAtDate]|:=TRUE()|OkToDisplayDataAsAtDate:=TRUE()
 OkToDisplayDataAsAtMonthEnd|True|[Measures].[OkToDisplayDataAsAtMonthEnd]|:=TRUE()|OkToDisplayDataAsAtMonthEnd:=TRUE()
 OkToDisplayDataMTD|True|[Measures].[OkToDisplayDataMTD]|:=HASONEVALUE(DateTable[EndOfMonth])|OkToDisplayDataMTD:=HASONEVALUE(DateTable[EndOfMonth])
@@ -336,15 +328,15 @@ OkToDisplayDataQTD|True|[Measures].[OkToDisplayDataQTD]|:=SWITCH(
     TRUE,
     NOT(HASONEVALUE (DateTable[EndOfQtr])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfQtr]), TRUE() ,      //Date is the last day of the quarter
-    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
-    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayQTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [OUTDATED_DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
+    NOT [OUTDATED_DisplayQTD_AtMaxMonthOnly],  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
     FALSE()
     )|OkToDisplayDataQTD:=SWITCH(
     TRUE,
     NOT(HASONEVALUE (DateTable[EndOfQtr])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfQtr]), TRUE() ,      //Date is the last day of the quarter
-    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
-    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayQTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [OUTDATED_DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
+    NOT [OUTDATED_DisplayQTD_AtMaxMonthOnly],  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
     FALSE()
     )
 OkToDisplayDataTotal|True|[Measures].[OkToDisplayDataTotal]|:=TRUE()|OkToDisplayDataTotal:=TRUE()
@@ -352,15 +344,15 @@ OkToDisplayDataYTD|True|[Measures].[OkToDisplayDataYTD]|:=SWITCH(
     TRUE,
     NOT(HASONEVALUE (DateTable[Year])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfYear]), TRUE() ,      //Date is the last day of the year
-    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
-    NOT ([DisplayYTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [OUTDATED_DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
+    NOT [OUTDATED_DisplayYTD_AtMaxMonthOnly],  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
     FALSE()
     )|OkToDisplayDataYTD:=SWITCH(
     TRUE,
     NOT(HASONEVALUE (DateTable[Year])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfYear]), TRUE() ,      //Date is the last day of the year
-    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
-    NOT ([DisplayYTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [OUTDATED_DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
+    NOT [OUTDATED_DisplayYTD_AtMaxMonthOnly],  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
     FALSE()
     )
 OkToDisplayPandL|False|[Measures].[OkToDisplayPandL]|:=VAR _NoGapsInDateRange = 
@@ -401,16 +393,16 @@ OkToDisplayPandL_QTD|False|[Measures].[OkToDisplayPandL_QTD]|:=SWITCH(
     NOT([OkToDisplayPandL]), FALSE(), 
     NOT(HASONEVALUE (DateTable[EndOfQtr])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfQtr]), TRUE() ,      //Date is the last day of the quarter
-    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
-    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayQTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [OUTDATED_DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
+    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT [OUTDATED_DisplayQTD_AtMaxMonthOnly],  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
     FALSE()
     )|OkToDisplayPandL_QTD:=SWITCH(
     TRUE,
     NOT([OkToDisplayPandL]), FALSE(), 
     NOT(HASONEVALUE (DateTable[EndOfQtr])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfQtr]), TRUE() ,      //Date is the last day of the quarter
-    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
-    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayQTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentQtr]  && [OUTDATED_DisplayQTD_AtNonQtrEnd], TRUE(),    //Date is the last date selected for qtr end and measure DisplayQTD_AtNonQtrEnd is TRUE
+    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT [OUTDATED_DisplayQTD_AtMaxMonthOnly],  TRUE(),        //Single end of month context exists and measure DisplayQTD_AtMaxMonthOnly is FALSE
     FALSE()
     )
 OkToDisplayPandL_YTD|False|[Measures].[OkToDisplayPandL_YTD]|:=SWITCH(
@@ -418,16 +410,16 @@ OkToDisplayPandL_YTD|False|[Measures].[OkToDisplayPandL_YTD]|:=SWITCH(
     NOT([OkToDisplayPandL]), FALSE(), 
     NOT(HASONEVALUE (DateTable[Year])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfYear]), TRUE() ,      //Date is the last day of the year
-    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
-    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayYTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [OUTDATED_DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
+    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT [OUTDATED_DisplayYTD_AtMaxMonthOnly],  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
     FALSE()
     )|OkToDisplayPandL_YTD:=SWITCH(
     TRUE,
     NOT([OkToDisplayPandL]), FALSE(), 
     NOT(HASONEVALUE (DateTable[Year])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfYear]), TRUE() ,      //Date is the last day of the year
-    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
-    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT ([DisplayYTD_AtMaxMonthOnly]),  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
+    MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear]  && [OUTDATED_DisplayYTD_AtNonYearEnd], TRUE(),    //Date is the last date selected for year end and measure DisplayYTD_AtNonYearEnd is TRUE
+    HASONEVALUE ( DateTable[EndOfMonth] ) && NOT [OUTDATED_DisplayYTD_AtMaxMonthOnly],  TRUE(),        //Single end of month context exists and measure DisplayYTD_AtMaxMonthOnly is FALSE
     FALSE()
     )
 OkToDisplayRawData|True|[Measures].[OkToDisplayRawData]|:=SWITCH(
@@ -443,6 +435,71 @@ OkToDisplayRawData|True|[Measures].[OkToDisplayRawData]|:=SWITCH(
     
     FALSE()
 )
+OkToDisplaySelectedDataTypeAtTimeLevelGranularity|True|[Measures].[OkToDisplaySelectedDataTypeAtTimeLevelGranularity]|:=SWITCH(
+    [DataMeasureTimeGranularity], 
+    "Date", TRUE(), 
+    "Month", [ContextIncludesWholeMonthsOnly], 
+    "Quarter", [ContextIncludesWholeQuartersOnly], 
+    "Year", [ContextIncludesWholeYearsOnly]
+)|OkToDisplaySelectedDataTypeAtTimeLevelGranularity:=SWITCH(
+    [DataMeasureTimeGranularity], 
+    "Date", TRUE(), 
+    "Month", [ContextIncludesWholeMonthsOnly], 
+    "Quarter", [ContextIncludesWholeQuartersOnly], 
+    "Year", [ContextIncludesWholeYearsOnly]
+)
+OUTDATED_DisplayQTD_AtMaxMonthOnly|False|[Measures].[OUTDATED_DisplayQTD_AtMaxMonthOnly]|:=COUNTROWS (
+//When this measure is false the QTD P&L is displayed for each month of qtr despite the fact that it is not the last month displayed in the qtr
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at max month for qtr displayed only" )
+    )
+) = 1|OUTDATED_DisplayQTD_AtMaxMonthOnly:=COUNTROWS (
+//When this measure is false the QTD P&L is displayed for each month of qtr despite the fact that it is not the last month displayed in the qtr
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at max month for qtr displayed only" )
+    )
+) = 1
+OUTDATED_DisplayQTD_AtNonQtrEnd|False|[Measures].[OUTDATED_DisplayQTD_AtNonQtrEnd]|:=COUNTROWS (
+//When this measure is false, the QTD P&L is only displayed at a qtr end, even if month end is the max month displayed for  given qtr
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at non-qtr end point" )
+    )
+) = 1|OUTDATED_DisplayQTD_AtNonQtrEnd:=COUNTROWS (
+//When this measure is false, the QTD P&L is only displayed at a qtr end, even if month end is the max month displayed for  given qtr
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display QTD at non-qtr end point" )
+    )
+) = 1
+OUTDATED_DisplayYTD_AtMaxMonthOnly|False|[Measures].[OUTDATED_DisplayYTD_AtMaxMonthOnly]|:=COUNTROWS (
+//When this measure is false the YTD P&L is displayed for each month of year despite the fact that it is not the last month displayed in the year
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display YTD for max month of year displayed only" )
+    )
+) = 1|OUTDATED_DisplayYTD_AtMaxMonthOnly:=COUNTROWS (
+//When this measure is false the YTD P&L is displayed for each month of year despite the fact that it is not the last month displayed in the year
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS (DisplayBehaviours[DisplayBehaviour] = "Display YTD for max month of year displayed only" )
+    )
+) = 1
+OUTDATED_DisplayYTD_AtNonYearEnd|False|[Measures].[OUTDATED_DisplayYTD_AtNonYearEnd]|:=COUNTROWS (
+//When this measure is false, the YTD P&L is only displayed at a year end, even if month end is the max month displayed for  given year
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS ( DisplayBehaviours[DisplayBehaviour] = "Display YTD at non-year end point" )
+    )
+) = 1|OUTDATED_DisplayYTD_AtNonYearEnd:=COUNTROWS (
+//When this measure is false, the YTD P&L is only displayed at a year end, even if month end is the max month displayed for  given year
+    CALCULATETABLE (
+        DisplayBehaviours,
+        KEEPFILTERS ( DisplayBehaviours[DisplayBehaviour] = "Display YTD at non-year end point" )
+    )
+) = 1
 OUTDATED_TB|True|[Measures].[OUTDATED_TB]|:=VAR _OkToDisplayTB=
     HASONEVALUE(DateTable[EndOfMonth]) && 
     [TimePeriodForTb] = "YTD" && 

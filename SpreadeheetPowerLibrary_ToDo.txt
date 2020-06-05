@@ -1,10 +1,11 @@
-Create a NoFilterAtQtrLevel similiar to NoFilterAtMonthLevel (in Measures_DataCalculation table)
+Maybe I am going overboard attempting to generalise calcuations
+ -It may be better to customise as I may want differen displays in P&L vs another measure on the same table?
+ 
 
-Update OkToDisplayAtTimeGranularity measure to include the above when [DataMeasureTimeGranularity] = "Year"
+Do I have overlap between OkToDisplayAtTimeGranularity and e.g. Oktodisplaymtd.  Maybe name measures better? 
 
  Use OkToDisplayAtTimeGranularity measure to
  test for level of granularity before display of data measure.
-
 
 Create an example of day level data
 
