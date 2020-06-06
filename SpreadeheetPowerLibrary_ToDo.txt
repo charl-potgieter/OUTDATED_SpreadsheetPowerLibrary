@@ -1,11 +1,6 @@
-Maybe I am going overboard attempting to generalise calcuations
- -It may be better to customise as I may want differen displays in P&L vs another measure on the same table?
- 
+Continue to work on MEasures_Journals, add time period logic
 
-Do I have overlap between OkToDisplayAtTimeGranularity and e.g. Oktodisplaymtd.  Maybe name measures better? 
-
- Use OkToDisplayAtTimeGranularity measure to
- test for level of granularity before display of data measure.
+Continue to work on Measures_PandL.  (Look at measures_TB for guidance)
 
 Create an example of day level data
 
