@@ -23,6 +23,21 @@ IF(
 
 
 //--------------------------------------------------------------------
+//     ContextContainsMaxAllSelectedDatesInCurrentYear
+//-------------------------------------------------------------------- 
+
+ContextContainsMaxAllSelectedDatesInCurrentYear:=Var _MinDateInContext = MIN(DateTable[Date])
+
+VAR _MaxDateInContext = MAX(DateTable[Date])
+
+VAR _ReturnValue = ([MaxAllSelectedDatesInCurrentYear] >= _MinDateInContext) && 
+   ([MaxAllSelectedDatesInCurrentYear] <= _MaxDateInContext)
+   
+RETURN
+   _ReturnValue
+
+
+//--------------------------------------------------------------------
 //     ContextIncludesWholeMonthsOnly
 //-------------------------------------------------------------------- 
 
@@ -113,6 +128,18 @@ RETURN
 
 
 //--------------------------------------------------------------------
+//     IsMaxWholeMonthInCurrentYear
+//-------------------------------------------------------------------- 
+
+IsMaxWholeMonthInCurrentYear:=SWITCH(
+    TRUE(),
+    NOT([IsSingleWholeMonth]), FALSE,
+    VALUES(DateTable[EndOfMonth]) = [MaxAllSelectedDatesInCurrentYear],
+    FALSE()
+)
+
+
+//--------------------------------------------------------------------
 //     IsSingleWholeMonth
 //-------------------------------------------------------------------- 
 
@@ -138,6 +165,42 @@ IsSingleWholeYear:=HASONEVALUE(DateTable[Year]) && [ContextIncludesWholeYearsOnl
 //-------------------------------------------------------------------- 
 
 Jnls_ExTimeLogic:=SUM(Example_Jnls[Jnl Amount])
+
+
+//--------------------------------------------------------------------
+//     Journals
+//-------------------------------------------------------------------- 
+
+Journals:=VAR _MTD = CALCULATE(
+    [Jnls_ExTimeLogic],
+    DATESMTD(DateTable[Date]))
+
+VAR _QTD =  CALCULATE(
+    [Jnls_ExTimeLogic],
+    DATESQTD(DateTable[Date]))
+
+VAR _YTD = CALCULATE(
+    [Jnls_ExTimeLogic],
+    DATESYTD(DateTable[Date]))
+
+VAR _PY = CALCULATE(
+    [Jnls_ExTimeLogic],
+    PREVIOUSYEAR(DateTable[Date]))
+    
+VAR _Total = [Jnls_ExTimeLogic]
+        
+VAR _ReturnValue = SWITCH(
+   TRUE, 
+   [TimePeriodForJournals] = "MTD" && [SelectedPeriodContainsOneMonthEnd], _MTD,
+   [TimePeriodForJournals] = "QTD" && [SelectedPeriodContainsOneQuarterEnd], _QTD, 
+   [TimePeriodForJournals] = "YTD" && ([SelectedPeriodContainsOneYearEnd] || [ContextContainsMaxAllSelectedDatesInCurrentYear]),  _YTD,
+   [TimePeriodForJournals] = "PY" && ([SelectedPeriodContainsOneYearEnd] || [ContextContainsMaxAllSelectedDatesInCurrentYear]), _PY,
+   [TimePeriodForJournals] = "Total", _Total, 
+   BLANK()
+)
+  
+RETURN
+    _ReturnValue
 
 
 //--------------------------------------------------------------------
@@ -184,6 +247,38 @@ IF(
             DateTable[Year] = _Year
     )
 )
+
+
+//--------------------------------------------------------------------
+//     MaxAllSelectedMonthsInCurrentYear
+//-------------------------------------------------------------------- 
+
+MaxAllSelectedMonthsInCurrentYear:=VAR _Year = 
+   VALUES(DateTable[Year])
+
+RETURN
+IF(
+    HASONEVALUE(DateTable[Year]), 
+    CALCULATE(
+            MAX(DateTable[EndOfMonth]),
+            ALLSELECTED(DateTable),
+            DateTable[Year] = _Year
+    )
+)
+
+
+//--------------------------------------------------------------------
+//     NoGapsInDateRange
+//-------------------------------------------------------------------- 
+
+NoGapsInDateRange:=VAR _FirstDate = MIN(DateTable[Date])
+    
+VAR _LastDate = MAX(DateTable[Date])
+
+VAR _ReturnValue = COUNTROWS(DateTable) = (_LastDate - _FirstDate + 1)
+
+RETURN
+   _ReturnValue
 
 
 //--------------------------------------------------------------------
@@ -352,11 +447,41 @@ RETURN
 
 
 //--------------------------------------------------------------------
+//     SelectedPeriodContainsOneMonthEnd
+//-------------------------------------------------------------------- 
+
+SelectedPeriodContainsOneMonthEnd:=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfMonth])
+) = 1
+
+
+//--------------------------------------------------------------------
+//     SelectedPeriodContainsOneQuarterEnd
+//-------------------------------------------------------------------- 
+
+SelectedPeriodContainsOneQuarterEnd:=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfQtr])
+) = 1
+
+
+//--------------------------------------------------------------------
+//     SelectedPeriodContainsOneYearEnd
+//-------------------------------------------------------------------- 
+
+SelectedPeriodContainsOneYearEnd:=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfYear])
+) = 1
+
+
+//--------------------------------------------------------------------
 //     TB
 //-------------------------------------------------------------------- 
 
 TB:=IF(
-    [TimePeriodForTb] =  "YTD" && HASONEVALUE(DateTable[Date]),
+    [TimePeriodForTb] =  "YTD" && HASONEVALUE(DateTable[EndOfMonth]),
     [TB_ExTimeLogic]
 )
 
@@ -366,6 +491,18 @@ TB:=IF(
 //-------------------------------------------------------------------- 
 
 TB_ExTimeLogic:=SUM(Example_TB[Amount])
+
+
+//--------------------------------------------------------------------
+//     TimePeriodForJournals
+//-------------------------------------------------------------------- 
+
+TimePeriodForJournals:=SWITCH(
+    TRUE(),
+    HASONEVALUE(TimePeriods[Time Period]), Values(TimePeriods[Time Period]),
+    NOT(ISFILTERED(TimePeriods[Time Period])), "Total",
+    BLANK()
+)
 
 
 //--------------------------------------------------------------------

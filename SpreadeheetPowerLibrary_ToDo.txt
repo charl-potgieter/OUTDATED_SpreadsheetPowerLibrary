@@ -1,6 +1,4 @@
-Continue to work on MEasures_Journals, add time period logic
-
-Continue to work on Measures_PandL.  (Look at measures_TB for guidance)
+Continue to work on Measures_PandL.  (Look at measures_Journal for time calculation guidance guidance)
 
 Create an example of day level data
 
