@@ -45,6 +45,7 @@ Primary Key|Example_LookupTable|[Example_LookupTable].[Primary Key]|True
 Account Code|Example_TB|[Example_TB].[Account Code]|True
 Amount|Example_TB|[Example_TB].[Amount]|True
 EndOfMonth|Example_TB|[Example_TB].[EndOfMonth]|True
+NullHeader|Measures_DataAccess|[Measures_DataAccess].[NullHeader]|True
 NullHeader|Measures_ErrorChecks|[Measures_ErrorChecks].[NullHeader]|True
 NullHeader|Measures_Journals|[Measures_Journals].[NullHeader]|True
 NullHeader|Measures_PandL|[Measures_PandL].[NullHeader]|True
@@ -53,5 +54,6 @@ NullHeader|Measures_TimeCalcs|[Measures_TimeCalcs].[NullHeader]|True
 NullHeader|Measures_TrialBalance|[Measures_TrialBalance].[NullHeader]|True
 DivideBy|NumberScale|[NumberScale].[DivideBy]|True
 ShowValuesAs|NumberScale|[NumberScale].[ShowValuesAs]|True
+PandL_CalcSource|PandLCalculationSource|[PandLCalculationSource].[PandL_CalcSource]|True
 Time Period Sort By Col|TimePeriods|[TimePeriods].[Time Period Sort By Col]|True
 Time Period|TimePeriods|[TimePeriods].[Time Period]|True

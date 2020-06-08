@@ -1,3 +1,5 @@
+Maybe create a Measures_DataAccessPoints table (which is the point of entry linking to actual data and will change model to model)
+
 Continue to work on Measures_PandL.  (Look at measures_Journal for time calculation guidance guidance)
 
 Create an example of day level data

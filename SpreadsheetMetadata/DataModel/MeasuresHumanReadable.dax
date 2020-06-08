@@ -23,72 +23,6 @@ IF(
 
 
 //--------------------------------------------------------------------
-//     ContextContainsMaxAllSelectedDatesInCurrentYear
-//-------------------------------------------------------------------- 
-
-ContextContainsMaxAllSelectedDatesInCurrentYear:=Var _MinDateInContext = MIN(DateTable[Date])
-
-VAR _MaxDateInContext = MAX(DateTable[Date])
-
-VAR _ReturnValue = ([MaxAllSelectedDatesInCurrentYear] >= _MinDateInContext) && 
-   ([MaxAllSelectedDatesInCurrentYear] <= _MaxDateInContext)
-   
-RETURN
-   _ReturnValue
-
-
-//--------------------------------------------------------------------
-//     ContextIncludesWholeMonthsOnly
-//-------------------------------------------------------------------- 
-
-ContextIncludesWholeMonthsOnly:=VAR _StartOfFirstMonth = 
-    EOMONTH(MIN(DateTable[Date]), -1) + 1
-    
-VAR _EndOfLastMonthEnd = 
-    EOMONTH(MAX(DateTable[Date]), 0)
-
-VAR _ReturnValue = 
-   COUNTROWS(DateTable) = (_EndOfLastMonthEnd - _StartOfFirstMonth +1)
-      
-RETURN 
-    _ReturnValue
-
-
-//--------------------------------------------------------------------
-//     ContextIncludesWholeQuartersOnly
-//-------------------------------------------------------------------- 
-
-ContextIncludesWholeQuartersOnly:=VAR _StartOfFirstQtr = 
-    STARTOFQUARTER(DateTable[Date])
-    
-VAR _EndOfLastQtr = 
-    ENDOFQUARTER(DateTable[Date])
-
-VAR _ReturnValue = 
-   COUNTROWS(DateTable) = (_EndOfLastQtr - _StartOfFirstQtr +1)
-      
-RETURN 
-    _ReturnValue
-
-
-//--------------------------------------------------------------------
-//     ContextIncludesWholeYearsOnly
-//-------------------------------------------------------------------- 
-
-ContextIncludesWholeYearsOnly:=VAR _StartOfFirstYear = 
-    DATE(YEAR(MIN(DateTable[Date])), 1, 1)
-    
-VAR _EndOfLastYear = 
-    DATE(YEAR(MAX(DateTable[Date])), 12, 31)
-
-VAR _ReturnValue = 
-   COUNTROWS(DateTable) = (_EndOfLastYear - _StartOfFirstYear +1)
-      
-RETURN 
-    _ReturnValue
-
-
-//--------------------------------------------------------------------
 //     Count of QuarterInCalendar
 //-------------------------------------------------------------------- 
 
@@ -143,21 +77,21 @@ IsMaxWholeMonthInCurrentYear:=SWITCH(
 //     IsSingleWholeMonth
 //-------------------------------------------------------------------- 
 
-IsSingleWholeMonth:=HASONEVALUE(DateTable[EndOfMonth]) && [ContextIncludesWholeMonthsOnly]
+IsSingleWholeMonth:=HASONEVALUE(DateTable[EndOfMonth]) && [SelectedPeriodIncludesWholeMonthsOnly]
 
 
 //--------------------------------------------------------------------
 //     IsSingleWholeQtr
 //-------------------------------------------------------------------- 
 
-IsSingleWholeQtr:=HASONEVALUE(DateTable[EndOfQtr]) && [ContextIncludesWholeQuartersOnly]
+IsSingleWholeQtr:=HASONEVALUE(DateTable[EndOfQtr]) && [SelectedPeriodIncludesWholeQuartersOnly]
 
 
 //--------------------------------------------------------------------
 //     IsSingleWholeYear
 //-------------------------------------------------------------------- 
 
-IsSingleWholeYear:=HASONEVALUE(DateTable[Year]) && [ContextIncludesWholeYearsOnly]
+IsSingleWholeYear:=HASONEVALUE(DateTable[Year]) && [SelectedPeriodIncludesWholeYearsOnly]
 
 
 //--------------------------------------------------------------------
@@ -193,8 +127,8 @@ VAR _ReturnValue = SWITCH(
    TRUE, 
    [TimePeriodForJournals] = "MTD" && [SelectedPeriodContainsOneMonthEnd], _MTD,
    [TimePeriodForJournals] = "QTD" && [SelectedPeriodContainsOneQuarterEnd], _QTD, 
-   [TimePeriodForJournals] = "YTD" && ([SelectedPeriodContainsOneYearEnd] || [ContextContainsMaxAllSelectedDatesInCurrentYear]),  _YTD,
-   [TimePeriodForJournals] = "PY" && ([SelectedPeriodContainsOneYearEnd] || [ContextContainsMaxAllSelectedDatesInCurrentYear]), _PY,
+   [TimePeriodForJournals] = "YTD" && ([SelectedPeriodContainsOneYearEnd] || [SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear]),  _YTD,
+   [TimePeriodForJournals] = "PY" && ([SelectedPeriodContainsOneYearEnd] || [SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear]), _PY,
    [TimePeriodForJournals] = "Total", _Total, 
    BLANK()
 )
@@ -346,46 +280,12 @@ OUTDATED_OkToDisplayPandL_QTD:=SWITCH(
 
 OUTDATED_OkToDisplayPandL_YTD:=SWITCH(
     TRUE,
-    NOT[OUTDATED_OkToDisplayPandL], FALSE(), 
+    NOT([NoGapsInDateRange]), FALSE(), 
     NOT(HASONEVALUE (DateTable[Year])), FALSE(), 
     MAX (DateTable[Date]) = VALUES(DateTable[EndOfYear]), TRUE() ,      //Date is the last day of the year
     MAX ( DateTable[Date] ) = [MaxAllSelectedDatesInCurrentYear], TRUE(),    //Date is the last date selected for year end
     FALSE()
     )
-
-
-//--------------------------------------------------------------------
-//     OUTDATED_P&L (From Jnls)
-//-------------------------------------------------------------------- 
-
-OUTDATED_P&L (From Jnls):=VAR _PandL_YTD =  CALCULATE(
-        -[Jnls_ExTimeLogic],
-        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
-        DATESYTD(DateTable[Date]))
-
-VAR _PandL_QTD =  CALCULATE(
-        -[Jnls_ExTimeLogic],
-        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
-        DATESQTD(DateTable[Date]))
-
-VAR _PandL_MTD = CALCULATE(
-        -[Jnls_ExTimeLogic],
-        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
-        DATESMTD(DateTable[Date]))
-
-VAR _PandL_PY = CALCULATE(
-        -[Jnls_ExTimeLogic],
-        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss"),
-        PREVIOUSYEAR(DateTable[Date]))
-        
-RETURN
-    SWITCH(
-        TRUE(),
-        [TimePeriodForPandL] = "YTD" && [OUTDATED_OkToDisplayPandL_YTD],  _PandL_YTD,
-        [TimePeriodForPandL] = "QTD" && [OUTDATED_OkToDisplayPandL_QTD], _PandL_QTD,
-        [TimePeriodForPandL] = "MTD" && [OUTDATED_OkToDisplayPandL_MTD], _PandL_MTD,
-        [TimePeriodForPandL] = "PY" && [OUTDATED_OkToDisplayPandL_PY], _PandL_PY
-        )
 
 
 //--------------------------------------------------------------------
@@ -447,6 +347,93 @@ RETURN
 
 
 //--------------------------------------------------------------------
+//     P&L (From Jnls) Ex-Time Logic
+//-------------------------------------------------------------------- 
+
+P&L (From Jnls) Ex-Time Logic:=CALCULATE(
+        -[Jnls_ExTimeLogic],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
+)
+
+
+//--------------------------------------------------------------------
+//     P&L (From Jnls)
+//-------------------------------------------------------------------- 
+
+P&L (From Jnls):=VAR _PandL_YTD =  CALCULATE(
+        [P&L (From Jnls) Ex-Time Logic],
+        DATESYTD(DateTable[Date]))
+
+VAR _PandL_QTD =  CALCULATE(
+        [P&L (From Jnls) Ex-Time Logic],
+        DATESQTD(DateTable[Date]))
+
+VAR _PandL_MTD = CALCULATE(
+        [P&L (From Jnls) Ex-Time Logic],
+        DATESMTD(DateTable[Date]))
+
+VAR _PandL_PY = CALCULATE(
+        [P&L (From Jnls) Ex-Time Logic],
+        PREVIOUSYEAR(DateTable[Date]))
+
+VAR _OkToDisplayPandL_MTD = [NoGapsInDateRange] && [SelectedPeriodContainsOneMonthEnd]
+
+VAR _OkToDisplayPandL_QTD = [NoGapsInDateRange] && [SelectedPeriodContainsOneQuarterEnd]
+        
+VAR _OkToDisplayPandL_YTD =  [NoGapsInDateRange] &&
+     ([SelectedPeriodContainsOneYearEnd] || [SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear])
+
+VAR _OkToDisplayPandL_PY = _OkToDisplayPandL_YTD
+        
+RETURN
+    SWITCH(
+        TRUE(),
+        [TimePeriodForPandL] = "MTD" && _OkToDisplayPandL_MTD, _PandL_MTD,
+        [TimePeriodForPandL] = "QTD" && _OkToDisplayPandL_QTD, _PandL_QTD,
+        [TimePeriodForPandL] = "YTD" && _OkToDisplayPandL_YTD,  _PandL_YTD,
+        [TimePeriodForPandL] = "PY" && _OkToDisplayPandL_PY, _PandL_PY
+        )
+
+
+//--------------------------------------------------------------------
+//     P&L
+//-------------------------------------------------------------------- 
+
+P&L:=SWITCH(
+    [P&LCalculationSource], 
+    "TB", "TBA", 
+    "Journals", [P&L (From Jnls)]
+)
+
+
+//--------------------------------------------------------------------
+//     P&LCalculationSource
+//-------------------------------------------------------------------- 
+
+P&LCalculationSource:=SWITCH(
+    TRUE,
+    HASONEVALUE(PandLCalculationSource[PandL_CalcSource]), VALUES(PandLCalculationSource[PandL_CalcSource]),
+    ISFILTERED(PandLCalculationSource[PandL_CalcSource]), BLANK(),
+    "TB"
+)
+
+
+//--------------------------------------------------------------------
+//     SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear
+//-------------------------------------------------------------------- 
+
+SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear:=Var _MinDateInContext = MIN(DateTable[Date])
+
+VAR _MaxDateInContext = MAX(DateTable[Date])
+
+VAR _ReturnValue = ([MaxAllSelectedDatesInCurrentYear] >= _MinDateInContext) && 
+   ([MaxAllSelectedDatesInCurrentYear] <= _MaxDateInContext)
+   
+RETURN
+   _ReturnValue
+
+
+//--------------------------------------------------------------------
 //     SelectedPeriodContainsOneMonthEnd
 //-------------------------------------------------------------------- 
 
@@ -474,6 +461,57 @@ SelectedPeriodContainsOneYearEnd:=CALCULATE(
     COUNTROWS(DateTable),
     KEEPFILTERS(DateTable[IsEndOfYear])
 ) = 1
+
+
+//--------------------------------------------------------------------
+//     SelectedPeriodIncludesWholeMonthsOnly
+//-------------------------------------------------------------------- 
+
+SelectedPeriodIncludesWholeMonthsOnly:=VAR _StartOfFirstMonth = 
+    EOMONTH(MIN(DateTable[Date]), -1) + 1
+    
+VAR _EndOfLastMonthEnd = 
+    EOMONTH(MAX(DateTable[Date]), 0)
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastMonthEnd - _StartOfFirstMonth +1)
+      
+RETURN 
+    _ReturnValue
+
+
+//--------------------------------------------------------------------
+//     SelectedPeriodIncludesWholeQuartersOnly
+//-------------------------------------------------------------------- 
+
+SelectedPeriodIncludesWholeQuartersOnly:=VAR _StartOfFirstQtr = 
+    STARTOFQUARTER(DateTable[Date])
+    
+VAR _EndOfLastQtr = 
+    ENDOFQUARTER(DateTable[Date])
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastQtr - _StartOfFirstQtr +1)
+      
+RETURN 
+    _ReturnValue
+
+
+//--------------------------------------------------------------------
+//     SelectedPeriodIncludesWholeYearsOnly
+//-------------------------------------------------------------------- 
+
+SelectedPeriodIncludesWholeYearsOnly:=VAR _StartOfFirstYear = 
+    DATE(YEAR(MIN(DateTable[Date])), 1, 1)
+    
+VAR _EndOfLastYear = 
+    DATE(YEAR(MAX(DateTable[Date])), 12, 31)
+
+VAR _ReturnValue = 
+   COUNTROWS(DateTable) = (_EndOfLastYear - _StartOfFirstYear +1)
+      
+RETURN 
+    _ReturnValue
 
 
 //--------------------------------------------------------------------
