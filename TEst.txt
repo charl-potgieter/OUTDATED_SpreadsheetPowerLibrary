@@ -1,0 +1,24 @@
+"Name"|"Visible"|"Unique Name"|"Dax Expression"|"Name and Expression"
+"AllSelectedDatesInCurrentQtr"|"True"|"[Measures].[AllSelectedDatesInCurrentQtr]"|":=VAR _Qtr = 
+   VALUES(DateTable[QuarterInCalendar])
+
+RETURN
+IF(
+    HASONEVALUE(DateTable[QuarterInCalendar]), 
+    CALCULATE(
+            MAX(DateTable[Date]),
+            ALLSELECTED(DateTable),
+            DateTable[QuarterInCalendar] = _Qtr
+    )
+)"|AllSelectedDatesInCurrentQtr":=VAR _Qtr = 
+   VALUES(DateTable[QuarterInCalendar])
+
+RETURN
+IF(
+    HASONEVALUE(DateTable[QuarterInCalendar]), 
+    CALCULATE(
+            MAX(DateTable[Date]),
+            ALLSELECTED(DateTable),
+            DateTable[QuarterInCalendar] = _Qtr
+    )
+)"

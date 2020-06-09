@@ -1,43 +1,10 @@
-Maybe create a Measures_DataAccessPoints table (which is the point of entry linking to actual data and will change model to model)
-
-Continue to work on Measures_PandL.  (Look at measures_Journal for time calculation guidance guidance)
-
-Create an example of day level data
-
-Don't bundle the OKToDisplayRawData measure into above.  Rather test for them seperately in the transactions measure
-
-Next work on OkToDisplayData (in Measures_DataCalculations) which references the above and adds items depending on DataTypeSelected
-
-Can I generalise the p&l measures to be broader than just p&l.  In essence these are simply difference between dates and point in time measures.  They could also be used for  tbs of different sorts etc.   There are really 3 WWITcalculation methods
-- point in time
-- movement between points in time
-- sum of transactions
-
-Get rid of FinancialDataGranularity and MeasuresPandL if the generalisation works
-
-
-Temporarily go back to Spreadsheet BI and look at how measures are saved.  There is an issue with the pipe delimted output and line feeds.
-Also worthwhile getting the table name into the HumanReadable dax measures
-
 
 Conditional formatting for YTD and MTD in pivot table? --> Yes this is possible
 
-Use measure RestrictHierachyLevels to modify P&L display
 
-Allow different filtering for Jnl level P&L vs Account level P&L
+- In respect of the missing lookups measure and missing lookup checks --> return OK if data load is set to false, irrespective of whether there is a lookup missing
 
-   Create a p&l measure based off trial balance dependent on time period selected 
-  ( Create P&L monthly, quarterly annually and PY measures)
-
- - Display P&L at different granularities
-    - For example only allow cost of sales to drill to account level 2, expenses to account level 3
-
-   - Create BS measure
-  
-  - In respect of the missing lookups measure and missing lookup checks --> return OK if data load is set to false, irrespective of whether there is a lookup missing
-
-
-  - Create a readme
+- Create a readme
 
 - Don't forget to use DAX studio for debugging, performance measurement and measure creation
    Dax studio F6 for format or Ctrl F6 for short form formatting

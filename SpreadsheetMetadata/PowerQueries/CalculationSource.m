@@ -1,14 +1,14 @@
 let
 
     tbl = Table.FromRecords({
-        [PandL_CalcSource = "TB"], 
-        [PandL_CalcSource = "Journals"]
+        [CalcSource = "TB"], 
+        [CalcSource = "Journals"]
         }), 
 
     ChangedType = Table.TransformColumnTypes(
        tbl, 
         {
-            {"PandL_CalcSource", type text}
+            {"CalcSource", type text}
 
         })
 
