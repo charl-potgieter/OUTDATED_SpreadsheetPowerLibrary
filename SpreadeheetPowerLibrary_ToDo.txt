@@ -1,6 +1,8 @@
+Query Example_FilledDataMissingDates
+ --> Cant fill forward after expansion as there is a risk filling across items
+ --> May need some sort of list.generate or list.accumulate function?
 
 Conditional formatting for YTD and MTD in pivot table? --> Yes this is possible
-
 
 - In respect of the missing lookups measure and missing lookup checks --> return OK if data load is set to false, irrespective of whether there is a lookup missing
 

@@ -1,5 +1,33 @@
 "Name"|"Visible"|"Unique Name"|"Dax Expression"|"Name and Expression"
 "Count of QuarterInCalendar"|"True"|"[Measures].[Count of QuarterInCalendar]"|":=COUNTA('DateTable'[QuarterInCalendar])"|"Count of QuarterInCalendar:=COUNTA('DateTable'[QuarterInCalendar])"
+"BS"|"True"|"[Measures].[BS]"|":=SWITCH(
+    TRUE(),
+    NOT(HASONEVALUE(DateTable[EndOfMonth])), BLANK(), 
+    NOT(HASONEVALUE(Example_ChartOfAccounts[Account Category 2])), BLANK(),
+    [TimePeriodForBS] <> "As at month end", BLANK(),
+    [BSCalculationSource] = "TB", [BS_From_TB_Raw],
+    BLANK()
+)"|"BS:=SWITCH(
+    TRUE(),
+    NOT(HASONEVALUE(DateTable[EndOfMonth])), BLANK(), 
+    NOT(HASONEVALUE(Example_ChartOfAccounts[Account Category 2])), BLANK(),
+    [TimePeriodForBS] <> "As at month end", BLANK(),
+    [BSCalculationSource] = "TB", [BS_From_TB_Raw],
+    BLANK()
+)"
+"TimePeriodForBS"|"True"|"[Measures].[TimePeriodForBS]"|":=SWITCH(
+      //  Cant just rely on HASONEVALUE, otherwise for example MTD numbers are geneterated when both YTD and QTD are selected
+    TRUE(),
+    HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
+    NOT(ISFILTERED(TimePeriods[Time Period])), "As at month end",
+    BLANK()
+    )"|"TimePeriodForBS:=SWITCH(
+      //  Cant just rely on HASONEVALUE, otherwise for example MTD numbers are geneterated when both YTD and QTD are selected
+    TRUE(),
+    HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
+    NOT(ISFILTERED(TimePeriods[Time Period])), "As at month end",
+    BLANK()
+    )"
 "BS_From_TB_Raw"|"True"|"[Measures].[BS_From_TB_Raw]"|":=VAR _TotalPandL_YTD=
     SUMX(
         ALL(Example_ChartOfAccounts), 
@@ -53,19 +81,6 @@ VAR _ReturnValue = SWITCH(
 
 RETURN
    _ReturnValue"
-"TimePeriodForBS"|"True"|"[Measures].[TimePeriodForBS]"|":=SWITCH(
-      //  Cant just rely on HASONEVALUE, otherwise for example MTD numbers are geneterated when both YTD and QTD are selected
-    TRUE(),
-    HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
-    NOT(ISFILTERED(TimePeriods[Time Period])), "As at month end",
-    BLANK()
-    )"|"TimePeriodForBS:=SWITCH(
-      //  Cant just rely on HASONEVALUE, otherwise for example MTD numbers are geneterated when both YTD and QTD are selected
-    TRUE(),
-    HASONEVALUE(TimePeriods[Time Period]), VALUES(TimePeriods[Time Period]),
-    NOT(ISFILTERED(TimePeriods[Time Period])), "As at month end",
-    BLANK()
-    )"
 "BSCalculationSource"|"True"|"[Measures].[BSCalculationSource]"|":=SWITCH(
     TRUE,
     HASONEVALUE(CalculationSource[CalcSource]), VALUES(CalculationSource[CalcSource]),
@@ -76,21 +91,6 @@ RETURN
     HASONEVALUE(CalculationSource[CalcSource]), VALUES(CalculationSource[CalcSource]),
     ISFILTERED(CalculationSource[CalcSource]), BLANK(),
     "TB"
-)"
-"BS"|"True"|"[Measures].[BS]"|":=SWITCH(
-    TRUE(),
-    NOT(HASONEVALUE(DateTable[EndOfMonth])), BLANK(), 
-    NOT(HASONEVALUE(Example_ChartOfAccounts[Account Category 2])), BLANK(),
-    [TimePeriodForBS] <> "As at month end", BLANK(),
-    [BSCalculationSource] = "TB", [BS_From_TB_Raw],
-    BLANK()
-)"|"BS:=SWITCH(
-    TRUE(),
-    NOT(HASONEVALUE(DateTable[EndOfMonth])), BLANK(), 
-    NOT(HASONEVALUE(Example_ChartOfAccounts[Account Category 2])), BLANK(),
-    [TimePeriodForBS] <> "As at month end", BLANK(),
-    [BSCalculationSource] = "TB", [BS_From_TB_Raw],
-    BLANK()
 )"
 "EXAMPLE Check items in data table not in lookup table"|"True"|"[Measures].[EXAMPLE Check items in data table not in lookup table]"|":=VAR _MissingItems = 
     EXCEPT(VALUES(Example_DataTable[Foreign Key]), VALUES(Example_LookupTable[Primary Key]))
@@ -385,6 +385,13 @@ RETURN
         [TimePeriodForPandL] = "YTD" && _OkToDisplayPandL_YTD,  _PandL_YTD,
         [TimePeriodForPandL] = "PY" && _OkToDisplayPandL_PY, _PandL_PY
         )"
+"P&L (From Jnls) raw"|"False"|"[Measures].[P&L (From Jnls) raw]"|":=CALCULATE(
+        -[Jnls Raw],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
+)"|"P&L (From Jnls) raw:=CALCULATE(
+        -[Jnls Raw],
+        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
+)"
 "P&L (From TB) raw"|"False"|"[Measures].[P&L (From TB) raw]"|":=CALCULATE(
         -[TB raw],
         KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
@@ -414,13 +421,6 @@ RETURN
     NOT(ISFILTERED(TimePeriods[Time Period])), "MTD",
     BLANK()
     )"
-"P&L (From Jnls) raw"|"False"|"[Measures].[P&L (From Jnls) raw]"|":=CALCULATE(
-        -[Jnls Raw],
-        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
-)"|"P&L (From Jnls) raw:=CALCULATE(
-        -[Jnls Raw],
-        KEEPFILTERS(Example_ChartOfAccounts[Account Category 1]  = "Profit and loss")
-)"
 "P&LCalculationSource"|"False"|"[Measures].[P&LCalculationSource]"|":=SWITCH(
     TRUE,
     HASONEVALUE(CalculationSource[CalcSource]), VALUES(CalculationSource[CalcSource]),
@@ -439,6 +439,7 @@ RETURN
     HASONEVALUE(NumberScale[ShowValuesAs]),
     VALUES(NumberScale[DivideBy]),
     1)"
+"IsSingleWholeMonth"|"True"|"[Measures].[IsSingleWholeMonth]"|":=HASONEVALUE(DateTable[EndOfMonth]) && [ContextIncludesWholeMonthsOnly]"|"IsSingleWholeMonth:=HASONEVALUE(DateTable[EndOfMonth]) && [ContextIncludesWholeMonthsOnly]"
 "ContextIncludesWholeYearsOnly"|"True"|"[Measures].[ContextIncludesWholeYearsOnly]"|":=VAR _StartOfFirstYear = 
     DATE(YEAR(MIN(DateTable[Date])), 1, 1)
     
@@ -460,23 +461,27 @@ VAR _ReturnValue =
       
 RETURN 
     _ReturnValue"
-"SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear"|"True"|"[Measures].[SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear]"|":=Var _MinDateInContext = MIN(DateTable[Date])
-
-VAR _MaxDateInContext = MAX(DateTable[Date])
-
-VAR _ReturnValue = ([MaxAllSelectedDatesInCurrentYear] >= _MinDateInContext) && 
-   ([MaxAllSelectedDatesInCurrentYear] <= _MaxDateInContext)
-   
-RETURN
-   _ReturnValue"|"SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear:=Var _MinDateInContext = MIN(DateTable[Date])
-
-VAR _MaxDateInContext = MAX(DateTable[Date])
-
-VAR _ReturnValue = ([MaxAllSelectedDatesInCurrentYear] >= _MinDateInContext) && 
-   ([MaxAllSelectedDatesInCurrentYear] <= _MaxDateInContext)
-   
-RETURN
-   _ReturnValue"
+"ContextContainsOneYearEnd"|"True"|"[Measures].[ContextContainsOneYearEnd]"|":=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfYear])
+) = 1"|"ContextContainsOneYearEnd:=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfYear])
+) = 1"
+"ContextContainsOneQuarterEnd"|"True"|"[Measures].[ContextContainsOneQuarterEnd]"|":=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfQtr])
+) = 1"|"ContextContainsOneQuarterEnd:=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfQtr])
+) = 1"
+"ContextContainsOneMonthEnd"|"True"|"[Measures].[ContextContainsOneMonthEnd]"|":=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfMonth])
+) = 1"|"ContextContainsOneMonthEnd:=CALCULATE(
+    COUNTROWS(DateTable),
+    KEEPFILTERS(DateTable[IsEndOfMonth])
+) = 1"
 "ContextIncludesWholeQuartersOnly"|"True"|"[Measures].[ContextIncludesWholeQuartersOnly]"|":=VAR _StartOfFirstQtr = 
     STARTOFQUARTER(DateTable[Date])
     
@@ -498,35 +503,6 @@ VAR _ReturnValue =
       
 RETURN 
     _ReturnValue"
-"ContextContainsOneQuarterEnd"|"True"|"[Measures].[ContextContainsOneQuarterEnd]"|":=CALCULATE(
-    COUNTROWS(DateTable),
-    KEEPFILTERS(DateTable[IsEndOfQtr])
-) = 1"|"ContextContainsOneQuarterEnd:=CALCULATE(
-    COUNTROWS(DateTable),
-    KEEPFILTERS(DateTable[IsEndOfQtr])
-) = 1"
-"ContextContainsOneMonthEnd"|"True"|"[Measures].[ContextContainsOneMonthEnd]"|":=CALCULATE(
-    COUNTROWS(DateTable),
-    KEEPFILTERS(DateTable[IsEndOfMonth])
-) = 1"|"ContextContainsOneMonthEnd:=CALCULATE(
-    COUNTROWS(DateTable),
-    KEEPFILTERS(DateTable[IsEndOfMonth])
-) = 1"
-"NoGapsInDateRange"|"True"|"[Measures].[NoGapsInDateRange]"|":=VAR _FirstDate = MIN(DateTable[Date])
-    
-VAR _LastDate = MAX(DateTable[Date])
-
-VAR _ReturnValue = COUNTROWS(DateTable) = (_LastDate - _FirstDate + 1)
-
-RETURN
-   _ReturnValue"|"NoGapsInDateRange:=VAR _FirstDate = MIN(DateTable[Date])
-    
-VAR _LastDate = MAX(DateTable[Date])
-
-VAR _ReturnValue = COUNTROWS(DateTable) = (_LastDate - _FirstDate + 1)
-
-RETURN
-   _ReturnValue"
 "ContextIncludesWholeMonthsOnly"|"True"|"[Measures].[ContextIncludesWholeMonthsOnly]"|":=VAR _StartOfFirstMonth = 
     EOMONTH(MIN(DateTable[Date]), -1) + 1
     
@@ -548,13 +524,49 @@ VAR _ReturnValue =
       
 RETURN 
     _ReturnValue"
-"ContextContainsOneYearEnd"|"True"|"[Measures].[ContextContainsOneYearEnd]"|":=CALCULATE(
-    COUNTROWS(DateTable),
-    KEEPFILTERS(DateTable[IsEndOfYear])
-) = 1"|"ContextContainsOneYearEnd:=CALCULATE(
-    COUNTROWS(DateTable),
-    KEEPFILTERS(DateTable[IsEndOfYear])
-) = 1"
+"SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear"|"True"|"[Measures].[SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear]"|":=Var _MinDateInContext = MIN(DateTable[Date])
+
+VAR _MaxDateInContext = MAX(DateTable[Date])
+
+VAR _ReturnValue = ([MaxAllSelectedDatesInCurrentYear] >= _MinDateInContext) && 
+   ([MaxAllSelectedDatesInCurrentYear] <= _MaxDateInContext)
+   
+RETURN
+   _ReturnValue"|"SelectedPeriodContainsMaxAllSelectedDatesInCurrentYear:=Var _MinDateInContext = MIN(DateTable[Date])
+
+VAR _MaxDateInContext = MAX(DateTable[Date])
+
+VAR _ReturnValue = ([MaxAllSelectedDatesInCurrentYear] >= _MinDateInContext) && 
+   ([MaxAllSelectedDatesInCurrentYear] <= _MaxDateInContext)
+   
+RETURN
+   _ReturnValue"
+"NoGapsInDateRange"|"True"|"[Measures].[NoGapsInDateRange]"|":=VAR _FirstDate = MIN(DateTable[Date])
+    
+VAR _LastDate = MAX(DateTable[Date])
+
+VAR _ReturnValue = COUNTROWS(DateTable) = (_LastDate - _FirstDate + 1)
+
+RETURN
+   _ReturnValue"|"NoGapsInDateRange:=VAR _FirstDate = MIN(DateTable[Date])
+    
+VAR _LastDate = MAX(DateTable[Date])
+
+VAR _ReturnValue = COUNTROWS(DateTable) = (_LastDate - _FirstDate + 1)
+
+RETURN
+   _ReturnValue"
+"IsMaxWholeMonthInCurrentYear"|"True"|"[Measures].[IsMaxWholeMonthInCurrentYear]"|":=SWITCH(
+    TRUE(),
+    NOT([IsSingleWholeMonth]), FALSE,
+    VALUES(DateTable[EndOfMonth]) = [MaxAllSelectedDatesInCurrentYear],
+    FALSE()
+)"|"IsMaxWholeMonthInCurrentYear:=SWITCH(
+    TRUE(),
+    NOT([IsSingleWholeMonth]), FALSE,
+    VALUES(DateTable[EndOfMonth]) = [MaxAllSelectedDatesInCurrentYear],
+    FALSE()
+)"
 "MaxAllSelectedDatesInCurrentQtr"|"True"|"[Measures].[MaxAllSelectedDatesInCurrentQtr]"|":=VAR _Qtr = 
    VALUES(DateTable[QuarterInCalendar])
 
@@ -578,17 +590,6 @@ IF(
             DateTable[QuarterInCalendar] = _Qtr
     )
 )"
-"IsMaxWholeMonthInCurrentYear"|"True"|"[Measures].[IsMaxWholeMonthInCurrentYear]"|":=SWITCH(
-    TRUE(),
-    NOT([IsSingleWholeMonth]), FALSE,
-    VALUES(DateTable[EndOfMonth]) = [MaxAllSelectedDatesInCurrentYear],
-    FALSE()
-)"|"IsMaxWholeMonthInCurrentYear:=SWITCH(
-    TRUE(),
-    NOT([IsSingleWholeMonth]), FALSE,
-    VALUES(DateTable[EndOfMonth]) = [MaxAllSelectedDatesInCurrentYear],
-    FALSE()
-)"
 "MaxAllSelectedMonthsInCurrentYear"|"True"|"[Measures].[MaxAllSelectedMonthsInCurrentYear]"|":=VAR _Year = 
    VALUES(DateTable[Year])
 
@@ -610,29 +611,6 @@ IF(
             MAX(DateTable[EndOfMonth]),
             ALLSELECTED(DateTable),
             DateTable[Year] = _Year
-    )
-)"
-"AllSelectedDatesInCurrentQtr"|"True"|"[Measures].[AllSelectedDatesInCurrentQtr]"|":=VAR _Qtr = 
-   VALUES(DateTable[QuarterInCalendar])
-
-RETURN
-IF(
-    HASONEVALUE(DateTable[QuarterInCalendar]), 
-    CALCULATE(
-            MAX(DateTable[Date]),
-            ALLSELECTED(DateTable),
-            DateTable[QuarterInCalendar] = _Qtr
-    )
-)"|"AllSelectedDatesInCurrentQtr:=VAR _Qtr = 
-   VALUES(DateTable[QuarterInCalendar])
-
-RETURN
-IF(
-    HASONEVALUE(DateTable[QuarterInCalendar]), 
-    CALCULATE(
-            MAX(DateTable[Date]),
-            ALLSELECTED(DateTable),
-            DateTable[QuarterInCalendar] = _Qtr
     )
 )"
 "MaxAllSelectedDatesInCurrentYear"|"True"|"[Measures].[MaxAllSelectedDatesInCurrentYear]"|":=VAR _Year = 
@@ -658,9 +636,8 @@ IF(
             DateTable[Year] = _Year
     )
 )"
-"IsSingleWholeYear"|"True"|"[Measures].[IsSingleWholeYear]"|":=HASONEVALUE(DateTable[Year]) && [ContextIncludesWholeYearsOnly]"|"IsSingleWholeYear:=HASONEVALUE(DateTable[Year]) && [ContextIncludesWholeYearsOnly]"
-"IsSingleWholeMonth"|"True"|"[Measures].[IsSingleWholeMonth]"|":=HASONEVALUE(DateTable[EndOfMonth]) && [ContextIncludesWholeMonthsOnly]"|"IsSingleWholeMonth:=HASONEVALUE(DateTable[EndOfMonth]) && [ContextIncludesWholeMonthsOnly]"
 "IsSingleWholeQtr"|"True"|"[Measures].[IsSingleWholeQtr]"|":=HASONEVALUE(DateTable[EndOfQtr]) && [ContextIncludesWholeQuartersOnly]"|"IsSingleWholeQtr:=HASONEVALUE(DateTable[EndOfQtr]) && [ContextIncludesWholeQuartersOnly]"
+"IsSingleWholeYear"|"True"|"[Measures].[IsSingleWholeYear]"|":=HASONEVALUE(DateTable[Year]) && [ContextIncludesWholeYearsOnly]"|"IsSingleWholeYear:=HASONEVALUE(DateTable[Year]) && [ContextIncludesWholeYearsOnly]"
 "MaxAllSelectedDates"|"True"|"[Measures].[MaxAllSelectedDates]"|":=CALCULATE(
         MAX(DateTable[Date]),
         ALLSELECTED(DateTable)

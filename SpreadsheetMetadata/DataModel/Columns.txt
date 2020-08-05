@@ -36,6 +36,9 @@ Amount|Example_DataTable|[Example_DataTable].[Amount]|True
 Date|Example_DataTable|[Example_DataTable].[Date]|True
 Foreign Key|Example_DataTable|[Example_DataTable].[Foreign Key]|True
 SubCategory|Example_DataTable|[Example_DataTable].[SubCategory]|True
+Amount|Example_FilledMissingData|[Example_FilledMissingData].[Amount]|True
+Date|Example_FilledMissingData|[Example_FilledMissingData].[Date]|True
+Item|Example_FilledMissingData|[Example_FilledMissingData].[Item]|True
 Account Code|Example_Jnls|[Example_Jnls].[Account Code]|True
 EndOfMonth|Example_Jnls|[Example_Jnls].[EndOfMonth]|True
 Jnl Amount|Example_Jnls|[Example_Jnls].[Jnl Amount]|True
