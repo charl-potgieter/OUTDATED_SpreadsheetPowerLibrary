@@ -1,3 +1,9 @@
+Create a query fn_std_Single_OnlyTableInSpreadsheetSelectedColsOnly
+ - maybe rather work into fn_ConsolidatedFilesInFolder - that way it can work across multiple source types
+ - useful for large datasets when I dont want to agregate entire datatable before selecting on or 2 columns
+  - Same as fn_std_Single_OnlyTableInSpreadsheet except add a list parameter
+
+
 Query Example_FilledDataMissingDates
  --> Cant fill forward after expansion as there is a risk filling across items
  --> May need some sort of list.generate or list.accumulate function?
