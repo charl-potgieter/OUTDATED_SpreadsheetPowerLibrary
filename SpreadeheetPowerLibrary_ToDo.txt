@@ -1,3 +1,9 @@
+Work on simple amortisation table  (I have started under Functions / Standard)
+
+Create a loan amortisation table.  See 
+https://powerpivotpro.com/2016/02/reviewlist-generate-create-tables-thin-air-power-bi-m/
+
+
 Create a query fn_std_Single_OnlyTableInSpreadsheetSelectedColsOnly
  - maybe rather work into fn_ConsolidatedFilesInFolder - that way it can work across multiple source types
  - useful for large datasets when I dont want to agregate entire datatable before selecting on or 2 columns
