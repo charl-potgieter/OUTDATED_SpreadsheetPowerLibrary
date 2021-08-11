@@ -1,3 +1,5 @@
+The name of this repo is a bit to similar to XL_Powerfunction library.  Maybe change this one to XL_PowerQueryAndDaxLibrary or better to split our the DAX piece?
+
 Work on simple amortisation table  (I have started under Functions / Standard)
 
 Create a loan amortisation table.  See 
