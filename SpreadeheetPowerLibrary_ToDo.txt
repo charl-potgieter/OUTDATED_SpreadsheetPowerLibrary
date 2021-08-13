@@ -1,5 +1,7 @@
 The name of this repo is a bit to similar to XL_Powerfunction library.  Maybe change this one to XL_PowerQueryAndDaxLibrary or better to split our the DAX piece?
 
+Is it worthwhile resurecting a record of functions that can easily be imported in one go (rather than having to reference each function with expression.evaluate for example)
+
 Work on simple amortisation table  (I have started under Functions / Standard)
 
 Create a loan amortisation table.  See 
